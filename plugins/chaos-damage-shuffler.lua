@@ -170,8 +170,11 @@ local function get_game_tag()
 	--other supported games!
 	if gameinfo.getromhash() == "72CFB569819DA4E799BF8FA1A6F023664CC7069B" then return "Novolin" 
 	elseif gameinfo.getromhash() == "3634826A2A03074928052F90928DA10DC715E77B" then return "Anticipation" 
+	elseif gameinfo.getromhash() == "3954E690CBF5241181DC592F01E87BEFA5531374" then return "Anticipation"
 	elseif gameinfo.getromhash() == "39A5FDB7EFD4425A8769FD3073B00DD85F6CD574" then return "CNDRR1"
+	elseif gameinfo.getromhash() == "BD21B1C548F183A136B1357A283E46F73702D08D" then return "CNDRR1"
 	elseif gameinfo.getromhash() == "42F954E9BD3256C011ABA14C7E5B400ABE35FDE3" then return "SuperDodgeBall" 
+	elseif gameinfo.getromhash() == "7A466684F5928FE656841DF20BCB458E74108239" then return "SuperDodgeBall"
 	elseif gameinfo.getromhash() == "47E103D8398CF5B7CBB42B95DF3A3C270691163B" then return "SMK_SNES" 
 	elseif gameinfo.getromhash() == "0BA01C0ED12703D31FB5A01A9B5FA1DFB760B972" then return "SMK_SNES" 
 	end -- 3 lap hack
@@ -188,13 +191,18 @@ local function get_game_tag()
 	
 	--MARIO BLOCK
 	if gameinfo.getromhash() == "EA343F4E445A9050D4B4FBAC2C77D0693B1D0922" then return "SMB1_NES"
+	elseif gameinfo.getromhash() == "FACEE9C577A5262DBE33AC4930BB0B58C8C037F7" then return "SMB1_NES"
 	elseif gameinfo.getromhash() == "1E6FEC9C3B5AC2EF654B2BCB5DE2EA5F3B7BA482" then return "SMB1_NES" -- Arcade Pit edition
 	elseif gameinfo.getromhash() == "C91796D3167ED19CB817CAAA2174A299A510E37F" then return "SMB2J_NES"
+	elseif gameinfo.getromhash() == "20E50128742162EE47561DB9E82B2836399C880C" then return "SMB2J_NES"
 	elseif gameinfo.getromhash() == "4B051018E39113EA17FB2E801C89004A7E40F998" then return "SMB2J_NES" -- Arcade Pit edition
 	elseif gameinfo.getromhash() == "7DF0F595B074F587C6A1D8F47E031F045D540DAE" then return "SMB2_NES"
+	elseif gameinfo.getromhash() == "43AC7C7AAF1846EAD7B544302BB9131E4964FD32" then return "SMB2_NES"
 	elseif gameinfo.getromhash() == "9286A2DB471D51713E9B75E68B47FFBF11E2D40B" then return "MB_NES"
+	elseif gameinfo.getromhash() == "BF43D93D36D7198E65B9B7C4E41DB108FE43FCBA" then return "MB_NES"
 	elseif gameinfo.getromhash() == "6CF18228CFB66D48B3642069979D4A5103CB8528" then return "SOMARI"
 	elseif gameinfo.getromhash() == "A03E7E526E79DF222E048AE22214BCA2BC49C449" then return "SMB3_NES"
+	elseif gameinfo.getromhash() == "A611B90B4833B20A364BF06EE3BE3B9093EA4DF9" then return "SMB3_NES"
 	elseif gameinfo.getromhash() == "C05817C5B7DF2FBFE631563E0B37237156A8F6B6" then return "SMAS_SNES"
 	elseif gameinfo.getromhash() == "D245E41A2B590F7D63666B0772CBDDFB26F254A2" then return "SMAS_SNES" -- PLUS WORLD
 	elseif gameinfo.getromhash() == "6B47BB75D16514B6A476AA0C73A683A2A4C18765" then return "SMW_SNES"
@@ -222,10 +230,13 @@ local function get_game_tag()
 	if gameinfo.getromhash() == "D3EFD32B68F1FE37A82DB9D9929B7CA7CC1A3AF4" then return "FZERO_SNES"
 	elseif gameinfo.getromhash() == "A582DF3B880A0C8DDC1CDA358C96E306C1E222BB" then return "FZERO_SNES" -- 3 lap hack
 	elseif gameinfo.getromhash() == "A31B8BD5B370A9103343C866F3C2B2998E889341" then return "CV1_NES"
+	elseif gameinfo.getromhash() == "EE09B857C90916EDD92A20C463485A610B0A76FD" then return "CV1_NES"
 	elseif gameinfo.getromhash() == "A685322FFAFAF8CCB20A78F8E0F9756B154F0772" then return "CV1_NES" -- death counter hack (needs rework for shuffle on death, however)
 	elseif gameinfo.getromhash() == "D6B96FD98AE480C694A103FE9A5D7D84EEAFB6F7" then return "CV2_NES" -- may want to track down the improvement hack hash
+	elseif gameinfo.getromhash() == "2447D6133573F7ED2CC49DC95B3130427BD4DC35" then return "CV2_NES"
 	elseif gameinfo.getromhash() == "F91281D5D9CC26BCF6FB4DE2F5BE086BC633D49B" then return "CV3_NES" 
 	elseif gameinfo.getromhash() == "A0F3B31D4E3B0D2CA2E8A34F91F14AD99A5AD11F" then return "CV3_FAMI" --famicom version
+	elseif gameinfo.getromhash() == "BEB7E005BCBAC031CE61613FA47DF24AD151E9AB" then return "CV3_FAMI" --famicom version
 	elseif gameinfo.getromhash() == "7F0D853CC6745437264ACD7141221F9DF5429079" then return "CV3_FAMI" --famicom with translation patch
 	elseif gameinfo.getromhash() == "684C1DFAFF8E5999422C24D48054D96BB12DA2F4" then return "CV4_SNES"
 	elseif gameinfo.getromhash() == "0F04FC1B5BF8C9A887ABCF14CE96B0CD" then return "BLOODLINES_GEN"
@@ -233,6 +244,7 @@ local function get_game_tag()
 	elseif gameinfo.getromhash() == "3BDAEAFA81AA17C91A8B42D0FA8C5B26E3FD6B80" then return "DRACULAX_SNES"
 	elseif gameinfo.getromhash() == "F324E7C8C3AD102ECDCCA011ECC494F6F345D768" then return "KIRBY_NES"
 	elseif gameinfo.getromhash() == "E099D688760FF0CE114CA8A9FD083E31E41CFADE" then return "KIRBY_NES"
+	elseif gameinfo.getromhash() == "32473799F96406D73AA37D5CF66E0E27F1F339DA" then return "KIRBY_NES"
 	elseif gameinfo.getromhash() == "743D60EE1536B0C7C24DBB8BA39D14ED5937C0D5" then return "DemonsCrest"
 	elseif gameinfo.getromhash() == "3F20C2C8749CCEE3A53732B41AE026BF3AAA2158" then return "FamilyFeud_SNES"
 	elseif gameinfo.getromhash() == "8556B6545B78022FE55705A83C3E751C463F56C7" then return "FamilyFeud_SNES"
