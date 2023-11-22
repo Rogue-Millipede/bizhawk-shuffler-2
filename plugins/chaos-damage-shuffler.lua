@@ -2558,12 +2558,12 @@ if type(tonumber(which_level)) == "number" then
 			else
 			log_message('Level ' .. tostring(which_level) .. ': ' ..  bt_snes_level_names[which_level] .. ' (' .. tag .. ')')
 		end
-	elseif tag ~= nil then 
-			log_message('Chaos Shuffler: recognized as ' .. string.format(tag))
 	elseif tag == nil or tag == NO_MATCH then
 		if settings.SuppressLog ~= true then
 			log_message(string.format('Chaos Shuffler: unrecognized? %s (%s)',
 			gameinfo.getromname(), gameinfo.getromhash())) end
+	elseif tag ~= nil then
+			log_message('Chaos Shuffler: recognized as ' .. string.format(tag))
 	end
 	
 end
