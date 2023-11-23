@@ -155,20 +155,6 @@ if checkversion("2.6.2") then
 	
 end
 
-local function get_game_tag()
-	-- try to just match the rom hash first
-	local tag = get_tag_from_hash_db(gameinfo.getromhash(), 'plugins/chaos-shuffler-hashes.dat')
-	if tag ~= nil and gamedata[tag] ~= nil then return tag end
-
-	-- check to see if any of the rom name samples match
-	local name = gameinfo.getromname()
-	for _,check in pairs(backupchecks) do
-		if check.test() then return check.tag end
-	end
-
-	return nil
-end
-
 bt_nes_level_names = { "Ragnarok's Canyon", "Wookie Hole", "Turbo Tunnel", "Arctic Caverns", "Surf City", "Karnath's Lair", "Volkmire's Inferno", "Intruder Excluder", 
 "Terra Tubes", "Rat Race", "Clinger-Winger", "The Revolution", "Armageddon"}
 
@@ -2240,6 +2226,20 @@ local gamedata = {
 
 local backupchecks = {
 }
+
+local function get_game_tag()
+	-- try to just match the rom hash first
+	local tag = get_tag_from_hash_db(gameinfo.getromhash(), 'plugins/chaos-shuffler-hashes.dat')
+	if tag ~= nil and gamedata[tag] ~= nil then return tag end
+
+	-- check to see if any of the rom name samples match
+	local name = gameinfo.getromname()
+	for _,check in pairs(backupchecks) do
+		if check.test() then return check.tag end
+	end
+
+	return nil
+end
 
 
 
