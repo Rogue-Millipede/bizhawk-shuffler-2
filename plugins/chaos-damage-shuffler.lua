@@ -2464,31 +2464,31 @@ if type(tonumber(which_level)) == "number" then
 	if tag == "BT_NES" or tag == "BT_NES_patched" then 
 		if tonumber(which_level_filename) == nil or which_level ~= tonumber(which_level_filename) then 
 		if settings.SuppressLog ~= true then
-			log_message(string.format('OOPS. Double-check that your file names start with a two-digit number from 01 to 13. Starting you on Level 1. File name is ' .. tostring(config.current_game))) end
+			log_console(string.format('OOPS. Double-check that your file names start with a two-digit number from 01 to 13. Starting you on Level 1. File name is ' .. tostring(config.current_game))) end
 		else
-			log_message('Level ' .. tostring(which_level) .. ': ' ..  bt_nes_level_names[which_level] .. ' (' .. tag .. ')')
+			log_console('Level ' .. tostring(which_level) .. ': ' ..  bt_nes_level_names[which_level] .. ' (' .. tag .. ')')
 		end
 	elseif tag == "BTDD_NES" or tag == "BTDD_SNES" or tag == "BTDD_SNES_patched" then 
 		if tonumber(which_level_filename) == nil or which_level ~= tonumber(which_level_filename) then 
 		if settings.SuppressLog ~= true then
-			log_message(string.format('OOPS. Double-check that your file names start with a two-digit number from 01 to 14. Starting you on Level 1. File name is ' .. tostring(config.current_game))) end
+			log_console(string.format('OOPS. Double-check that your file names start with a two-digit number from 01 to 14. Starting you on Level 1. File name is ' .. tostring(config.current_game))) end
 		else
-			log_message('Level ' .. btdd_level_names[which_level] .. ' (' .. tag .. ')')
+			log_console('Level ' .. btdd_level_names[which_level] .. ' (' .. tag .. ')')
 		end
 	elseif tag == "BT_SNES" then 
 		if tonumber(bt_snes_level_recoder[tonumber(which_level_filename)]) == nil 
 		then 
 		if settings.SuppressLog ~= true then
-			log_message(string.format('OOPS. Double-check that your file names start with a two-digit number from 01 to 08. Starting you on Level 1. File name is ' .. tostring(config.current_game))) end
+			log_console(string.format('OOPS. Double-check that your file names start with a two-digit number from 01 to 08. Starting you on Level 1. File name is ' .. tostring(config.current_game))) end
 			else
-			log_message('Level ' .. tostring(which_level) .. ': ' ..  bt_snes_level_names[which_level] .. ' (' .. tag .. ')')
+			log_console('Level ' .. tostring(which_level) .. ': ' ..  bt_snes_level_names[which_level] .. ' (' .. tag .. ')')
 		end
 	elseif tag == nil or tag == NO_MATCH then
 		if settings.SuppressLog ~= true then
-			log_message(string.format('Chaos Shuffler: unrecognized? %s (%s)',
+			log_console(string.format('Chaos Shuffler: unrecognized? %s (%s)',
 			gameinfo.getromname(), gameinfo.getromhash())) end
 	elseif tag ~= nil then
-			log_message('Chaos Shuffler: recognized as ' .. string.format(tag))
+			log_console('Chaos Shuffler: recognized as ' .. string.format(tag))
 	end
 	
 end
