@@ -155,105 +155,18 @@ if checkversion("2.6.2") then
 	
 end
 
--- Added recognition of the hashes for Battletoads (U), unmodified and patched, and additional games.
--- This is a temporary fix. Future versions will reimplement the actual, good solution of a hash database as done in the Mega Man damage shuffler.
-
 local function get_game_tag()
-	if gameinfo.getromhash() == "5C3A497A82BE60704DEDF45248B6AD9B32C855AB" then return "BT_NES"
-	elseif gameinfo.getromhash() == "24D246BA605E3592F25EB04AB4DE9FDBF2B87B14" then return "BT_NES_patched" 
-	elseif gameinfo.getromhash() == "61832D0F955CFF169FF059BD557BE4F522B15B7C" then return "BTDD_NES" 
-	elseif gameinfo.getromhash() == "3041C5C2A88449CF358A57D019930849575F8F6D" then return "BT_SNES" 
-	elseif gameinfo.getromhash() == "BF56F12BDDE3E2233D7FFCAF4825B10D92632B77" then return "BTDD_SNES" 
-	elseif gameinfo.getromhash() == "0248CF714380D11E38A4C242A001E97164D477F5" then return "BTDD_SNES_patched" -- patched for level select
+	-- try to just match the rom hash first
+	local tag = get_tag_from_hash_db(gameinfo.getromhash(), 'plugins/chaos-shuffler-hashes.dat')
+	if tag ~= nil and gamedata[tag] ~= nil then return tag end
+
+	-- check to see if any of the rom name samples match
+	local name = gameinfo.getromname()
+	for _,check in pairs(backupchecks) do
+		if check.test() then return check.tag end
 	end
-	
-	--other supported games!
-	if gameinfo.getromhash() == "72CFB569819DA4E799BF8FA1A6F023664CC7069B" then return "Novolin" 
-	elseif gameinfo.getromhash() == "3634826A2A03074928052F90928DA10DC715E77B" then return "Anticipation" 
-	elseif gameinfo.getromhash() == "3954E690CBF5241181DC592F01E87BEFA5531374" then return "Anticipation"
-	elseif gameinfo.getromhash() == "39A5FDB7EFD4425A8769FD3073B00DD85F6CD574" then return "CNDRR1"
-	elseif gameinfo.getromhash() == "BD21B1C548F183A136B1357A283E46F73702D08D" then return "CNDRR1"
-	elseif gameinfo.getromhash() == "42F954E9BD3256C011ABA14C7E5B400ABE35FDE3" then return "SuperDodgeBall" 
-	elseif gameinfo.getromhash() == "7A466684F5928FE656841DF20BCB458E74108239" then return "SuperDodgeBall"
-	elseif gameinfo.getromhash() == "47E103D8398CF5B7CBB42B95DF3A3C270691163B" then return "SMK_SNES" 
-	elseif gameinfo.getromhash() == "0BA01C0ED12703D31FB5A01A9B5FA1DFB760B972" then return "SMK_SNES" 
-	end -- 3 lap hack
-	
-	--Super Metroid and Link to the Past
-	if gameinfo.getromhash() == "DA957F0D63D14CB441D215462904C4FA8519C613" then return "SuperMetroid" -- US/JP 1.0
-	elseif gameinfo.getromhash() == "E7E852F0159CE612E3911164878A9B08B3CB9060" then return "LTTP" -- JP 1.0
-	elseif gameinfo.getromhash() == "6D4F10A8B10E10DBE624CB23CF03B88BB8252973" then return "LTTP" -- US release
-	--elseif gameinfo.getromhash() == "PASTE YOUR HASH HERE AND REMOVE THE -- AT THE FRONT OF THIS LINE" then return "LTTP" -- YOUR SEED/REVISION FOR LTTP
-	--elseif gameinfo.getromhash() == "PASTE YOUR HASH HERE AND REMOVE THE -- AT THE FRONT OF THIS LINE" then return "SuperMetroid" -- YOUR SEED/REVISION FOR SUPER METROID
-	--elseif gameinfo.getromhash() == "PASTE YOUR HASH HERE AND REMOVE THE -- AT THE FRONT OF THIS LINE" then return "SMZ3" -- YOUR SMZ3 ROM
-	--MAKE MULTIPLE LINES WITH EACH HASH IF YOU ARE SHUFFLING MULTIPLE ROMS OF THESE RANDOMIZERS
-	end
-	
-	--MARIO BLOCK
-	if gameinfo.getromhash() == "EA343F4E445A9050D4B4FBAC2C77D0693B1D0922" then return "SMB1_NES"
-	elseif gameinfo.getromhash() == "FACEE9C577A5262DBE33AC4930BB0B58C8C037F7" then return "SMB1_NES"
-	elseif gameinfo.getromhash() == "1E6FEC9C3B5AC2EF654B2BCB5DE2EA5F3B7BA482" then return "SMB1_NES" -- Arcade Pit edition
-	elseif gameinfo.getromhash() == "C91796D3167ED19CB817CAAA2174A299A510E37F" then return "SMB2J_NES"
-	elseif gameinfo.getromhash() == "20E50128742162EE47561DB9E82B2836399C880C" then return "SMB2J_NES"
-	elseif gameinfo.getromhash() == "4B051018E39113EA17FB2E801C89004A7E40F998" then return "SMB2J_NES" -- Arcade Pit edition
-	elseif gameinfo.getromhash() == "7DF0F595B074F587C6A1D8F47E031F045D540DAE" then return "SMB2_NES"
-	elseif gameinfo.getromhash() == "43AC7C7AAF1846EAD7B544302BB9131E4964FD32" then return "SMB2_NES"
-	elseif gameinfo.getromhash() == "9286A2DB471D51713E9B75E68B47FFBF11E2D40B" then return "MB_NES"
-	elseif gameinfo.getromhash() == "BF43D93D36D7198E65B9B7C4E41DB108FE43FCBA" then return "MB_NES"
-	elseif gameinfo.getromhash() == "6CF18228CFB66D48B3642069979D4A5103CB8528" then return "SOMARI"
-	elseif gameinfo.getromhash() == "A03E7E526E79DF222E048AE22214BCA2BC49C449" then return "SMB3_NES"
-	elseif gameinfo.getromhash() == "A611B90B4833B20A364BF06EE3BE3B9093EA4DF9" then return "SMB3_NES"
-	elseif gameinfo.getromhash() == "C05817C5B7DF2FBFE631563E0B37237156A8F6B6" then return "SMAS_SNES"
-	elseif gameinfo.getromhash() == "D245E41A2B590F7D63666B0772CBDDFB26F254A2" then return "SMAS_SNES" -- PLUS WORLD
-	elseif gameinfo.getromhash() == "6B47BB75D16514B6A476AA0C73A683A2A4C18765" then return "SMW_SNES"
-	elseif gameinfo.getromhash() == "3A4DDB39B234A67FFB361EE7ABC3D23E0A8B1C89" then return "SML1_GB"
-	elseif gameinfo.getromhash() == "418203621B887CAA090215D97E3F509B79AFFD3E" then return "SML1_GB"
-	elseif gameinfo.getromhash() == "7D95107C45D4F33649324DA2E8A3C8DDB10CDA5E" then return "SML1_GB" -- DX old patch
-	elseif gameinfo.getromhash() == "E33874064BBA13F8871A8BFE8E5C695AB2E49580" then return "SML1_GB" -- DX 2.0 patch
-	elseif gameinfo.getromhash() == "B9ED5789C9F481E25A64DAD1C5E8E93E4DDC1B80" then return "SML2_GB"
-	elseif gameinfo.getromhash() == "BBA408539ECBF8D322324956D859BC86E2A9977B" then return "SML2_GB"
-	elseif gameinfo.getromhash() == "96E3A314561FB394CDF51101F9178A32713C2313" then return "SML2_GB"																											 
-	elseif gameinfo.getromhash() == "D11D94FA3C36B9F72E925070B66BB4F16D31001E" then return "SML2_GB" -- DX patch
-	elseif gameinfo.getromhash() == "9BEF1128717F958171A4AFAC3ED78EE2BB4E86CE" then return "SM64_N64"
-	elseif gameinfo.getromhash() == "6DF570060694C5448BF13CCC0218997D2FBF21E3" then return "MPAINT_DPAD_SNES" -- joystick hack for Mario Paint
-	elseif gameinfo.getromhash() == "C807F2856F44FB84326FAC5B462340DCDD0471F8" then return "SMW2YI_SNES" -- Yoshi's Island only works partially, kept active for testing purposes
-	elseif gameinfo.getromhash() == "34612A93741F156D6E497462AB7F253CB8A959A0" then return "SMW2YI_SNES" -- Yoshi's Island only works partially, kept active for testing purposes
-	--maybe supported someday, no promises ok?
-	--elseif gameinfo.getromhash() == "D8DFACBFEC34CDC871D73C901811551FE1706923" then return "DK1_NES"
-	--elseif gameinfo.getromhash() == "02633E208732B598E3A8EB80B6E0E09926F25E83" then return "DKJR_NES"
-	--elseif gameinfo.getromhash() == "EC6FA944C672A2522C8BC270A25842281C65FF5D" then return "DK3_NES"
-	--elseif gameinfo.getromhash() == "A3B727119870E6BBA4C8889EF12E9703021EA9C2" then return "NOTGOLF_NES"
-	--elseif gameinfo.getromhash() == "A22713711B5CD58DFBAFC9688DADEA66C59888CE" then return "NSMB_DS"
-	end
-	
-	--new games for the chaos shuffler?!?
-	if gameinfo.getromhash() == "D3EFD32B68F1FE37A82DB9D9929B7CA7CC1A3AF4" then return "FZERO_SNES"
-	elseif gameinfo.getromhash() == "A582DF3B880A0C8DDC1CDA358C96E306C1E222BB" then return "FZERO_SNES" -- 3 lap hack
-	elseif gameinfo.getromhash() == "A31B8BD5B370A9103343C866F3C2B2998E889341" then return "CV1_NES"
-	elseif gameinfo.getromhash() == "EE09B857C90916EDD92A20C463485A610B0A76FD" then return "CV1_NES"
-	elseif gameinfo.getromhash() == "A685322FFAFAF8CCB20A78F8E0F9756B154F0772" then return "CV1_NES" -- death counter hack (needs rework for shuffle on death, however)
-	elseif gameinfo.getromhash() == "D6B96FD98AE480C694A103FE9A5D7D84EEAFB6F7" then return "CV2_NES" -- may want to track down the improvement hack hash
-	elseif gameinfo.getromhash() == "2447D6133573F7ED2CC49DC95B3130427BD4DC35" then return "CV2_NES"
-	elseif gameinfo.getromhash() == "F91281D5D9CC26BCF6FB4DE2F5BE086BC633D49B" then return "CV3_NES" 
-	elseif gameinfo.getromhash() == "A0F3B31D4E3B0D2CA2E8A34F91F14AD99A5AD11F" then return "CV3_FAMI" --famicom version
-	elseif gameinfo.getromhash() == "BEB7E005BCBAC031CE61613FA47DF24AD151E9AB" then return "CV3_FAMI" --famicom version
-	elseif gameinfo.getromhash() == "7F0D853CC6745437264ACD7141221F9DF5429079" then return "CV3_FAMI" --famicom with translation patch
-	elseif gameinfo.getromhash() == "684C1DFAFF8E5999422C24D48054D96BB12DA2F4" then return "CV4_SNES"
-	elseif gameinfo.getromhash() == "0F04FC1B5BF8C9A887ABCF14CE96B0CD" then return "BLOODLINES_GEN"
-	elseif gameinfo.getromhash() == "B5930461DD1F224061D7FE3F380478A9" then return "RONDO_TG16"
-	elseif gameinfo.getromhash() == "3BDAEAFA81AA17C91A8B42D0FA8C5B26E3FD6B80" then return "DRACULAX_SNES"
-	elseif gameinfo.getromhash() == "F324E7C8C3AD102ECDCCA011ECC494F6F345D768" then return "KIRBY_NES"
-	elseif gameinfo.getromhash() == "E099D688760FF0CE114CA8A9FD083E31E41CFADE" then return "KIRBY_NES"
-	elseif gameinfo.getromhash() == "32473799F96406D73AA37D5CF66E0E27F1F339DA" then return "KIRBY_NES"
-	elseif gameinfo.getromhash() == "743D60EE1536B0C7C24DBB8BA39D14ED5937C0D5" then return "DemonsCrest"
-	elseif gameinfo.getromhash() == "3F20C2C8749CCEE3A53732B41AE026BF3AAA2158" then return "FamilyFeud_SNES"
-	elseif gameinfo.getromhash() == "8556B6545B78022FE55705A83C3E751C463F56C7" then return "FamilyFeud_SNES"
-	elseif gameinfo.getromhash() == "5DB2C9E02D3551292A0218F73875F9F08318ECB9" then return "Monopoly_NES"
-	elseif gameinfo.getromhash() == "9F6FF6264E0361E074F9CFEE2EC4976866A781C5" then return "BUBSY1_SNES"
-	end
-	
+
 	return nil
-	
 end
 
 bt_nes_level_names = { "Ragnarok's Canyon", "Wookie Hole", "Turbo Tunnel", "Arctic Caverns", "Surf City", "Karnath's Lair", "Volkmire's Inferno", "Intruder Excluder", 
