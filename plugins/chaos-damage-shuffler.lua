@@ -839,10 +839,14 @@ end
 local function antic_swap(gamemeta)
 	return function(data)
 		-- We will swap on 3 scenarios. They work across all players.
-		-- 1. There is a specific address that goes to 192 when a human player gets a letter wrong, then ticks down frame by frame to 0 or 16. Never moves up otherwise.
-		-- 2. There is an address that counts down the die from 6 to 0. When you run out of time, this value hits 0, and you should swap.
-		-- 3. There is an address that counts down the time to type in a guess. A CPU player will always provide a correct answer when this activates.
-		-- However, when a human player runs out of time, this hits 0, then goes to 255. This should swap on 255, IGNORING the title screen.
+		-- 1. There is a specific address that goes to 192 when a human player gets a letter wrong,
+		-- then ticks down frame by frame to 0 or 16. Never moves up otherwise.
+		-- 2. There is an address that counts down the die from 6 to 0.
+		-- When you run out of time, this value hits 0, and you should swap.
+		-- 3. There is an address that counts down the time to type in a guess.
+		-- A CPU player will always provide a correct answer when this activates.
+		-- However, when a human player runs out of time, this hits 0, then goes to 255.
+		-- This should swap on 255, IGNORING the title screen.
 		-- THESE VARIABLES ARE SHARED IN MULTIPLAYER YAY
 		
 		-- 4. We can now swap on a correct computer answer.
@@ -853,22 +857,11 @@ local function antic_swap(gamemeta)
 		-- human player value 00AC can be 1, 2, 3, 4
 		
 		-- when who buzzed in > than 00AC, then we should swap if they get it right
-	
-		local currbotchedletter = gamemeta.getbotchedletter()
-		local currbuzzintime = gamemeta.getbuzzintime()
-		local currtypetime = gamemeta.gettypetime()
-		local curranswerright = gamemeta.getanswerright()
 
-		-- retrieve previous values for botch, buzz-in, and typing time, as well as roll-up for correct answer
-		local prevbotchedletter = data.prevbotchedletter
-		local prevbuzzintime = data.prevbuzzintime
-		local prevtypetime = data.prevtypetime
-		local prevanswerright = data.prevanswerright
-
-		data.prevbotchedletter = currbotchedletter
-		data.prevbuzzintime = currbuzzintime
-		data.prevtypetime = currtypetime
-		data.prevanswerright = curranswerright
+		local _, currbotchedletter, prevbotchedletter = update_prev('botched_letter', gamemeta.getbotchedletter())
+		local _, currbuzzintime, prevbuzzintime = update_prev('buzz_in_time', gamemeta.getbuzzintime())
+		local _, currtypetime, prevtypetime = update_prev('type_time', gamemeta.gettypetime())
+		local _, curranswerright, prevanswerright = update_prev('answer_right', gamemeta.getanswerright())
 
 		-- wrong letter
 		if prevbotchedletter ~= nil and currbotchedletter > prevbotchedletter then
@@ -879,14 +872,13 @@ local function antic_swap(gamemeta)
 		-- ran out of time to buzz in (ranges from 0-6, resets to 6 once the die appears, shuffle on drop to 0)
 		if memory.read_u8(0x046E, "RAM") <= -- who rang in, defaults to 0
 			memory.read_u8(0x00AC, "RAM") -- how many humans, defaults to 1 - so, not a computer player being award spaces
-			and prevbuzzintime ~= nil and prevbuzzintime ~= 255 and
-			currbuzzintime < prevbuzzintime and -- it'll stay on 0 for a while.
-			currbuzzintime == 0
+			and prevbuzzintime ~= nil and prevbuzzintime ~= 255
+			and currbuzzintime < prevbuzzintime -- it'll stay on 0 for a while.
+			and currbuzzintime == 0
 		then
-		
-		-- NOTE: will reset to 0 also when all human players are out of guesses and no one else can answer.
-		-- We don't want a second swap in those cases.
-		-- In this case, currbotchedletter will == 0 or 16, and guess time will be < 25.
+			-- NOTE: will reset to 0 also when all human players are out of guesses and no one else can answer.
+			-- We don't want a second swap in those cases.
+			-- In this case, currbotchedletter will == 0 or 16, and guess time will be < 25.
 			if currtypetime < 25 and (currbotchedletter == 0 or currbotchedletter == 16) then
 				return false
 			end
