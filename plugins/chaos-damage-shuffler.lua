@@ -1021,249 +1021,102 @@ local function Monopoly_NES_swap(gamemeta)
 	-- goals: swap when you lose money, go to jail, or go bankrupt
 	-- don't swap if: setting options at start of game, buying a property, winning an auction, trading, building on a property	
 	return function(data)
+
+		local _, currInEditor, prevInEditor = update_prev('in_editor', gamemeta.getInEditor())
+
+		-- this needs cleanup with a table or something
 		
-		local currInEditor = gamemeta.getInEditor()
+		local _, p1currHuman, p1prevHuman = update_prev('p1_human', gamemeta.getp1Human())
+		local _, p2currHuman, p2prevHuman = update_prev('p2_human', gamemeta.getp2Human())
+		local _, p3currHuman, p3prevHuman = update_prev('p3_human', gamemeta.getp3Human())
+		local _, p4currHuman, p4prevHuman = update_prev('p4_human', gamemeta.getp4Human())
+		local _, p5currHuman, p5prevHuman = update_prev('p5_human', gamemeta.getp5Human())
+		local _, p6currHuman, p6prevHuman = update_prev('p6_human', gamemeta.getp6Human())
+		local _, p7currHuman, p7prevHuman = update_prev('p7_human', gamemeta.getp7Human())
+		local _, p8currHuman, p8prevHuman = update_prev('p8_human', gamemeta.getp8Human())
 		
-		local p1currHuman = gamemeta.getp1Human()
-		local p2currHuman = gamemeta.getp2Human()
-		local p3currHuman = gamemeta.getp3Human()
-		local p4currHuman = gamemeta.getp4Human()
-		local p5currHuman = gamemeta.getp5Human()
-		local p6currHuman = gamemeta.getp6Human()
-		local p7currHuman = gamemeta.getp7Human()
-		local p8currHuman = gamemeta.getp8Human()
+		local _, p1currInJail, p1prevInJail = update_prev('p1_in_jail', gamemeta.getp1InJail())
+		local _, p2currInJail, p2prevInJail = update_prev('p2_in_jail', gamemeta.getp2InJail())
+		local _, p3currInJail, p3prevInJail = update_prev('p3_in_jail', gamemeta.getp3InJail())
+		local _, p4currInJail, p4prevInJail = update_prev('p4_in_jail', gamemeta.getp4InJail())
+		local _, p5currInJail, p5prevInJail = update_prev('p5_in_jail', gamemeta.getp5InJail())
+		local _, p6currInJail, p6prevInJail = update_prev('p6_in_jail', gamemeta.getp6InJail())
+		local _, p7currInJail, p7prevInJail = update_prev('p7_in_jail', gamemeta.getp7InJail())
+		local _, p8currInJail, p8prevInJail = update_prev('p8_in_jail', gamemeta.getp8InJail())
 		
-		local p1currInJail = gamemeta.getp1InJail()
-		local p2currInJail = gamemeta.getp2InJail()
-		local p3currInJail = gamemeta.getp3InJail()
-		local p4currInJail = gamemeta.getp4InJail()
-		local p5currInJail = gamemeta.getp5InJail()
-		local p6currInJail = gamemeta.getp6InJail()
-		local p7currInJail = gamemeta.getp7InJail()
-		local p8currInJail = gamemeta.getp8InJail()
+		local _, p1currBankrupt, p1prevBankrupt = update_prev('p1_bankrupt', gamemeta.getp1Bankrupt())
+		local _, p2currBankrupt, p2prevBankrupt = update_prev('p2_bankrupt', gamemeta.getp2Bankrupt())
+		local _, p3currBankrupt, p3prevBankrupt = update_prev('p3_bankrupt', gamemeta.getp3Bankrupt())
+		local _, p4currBankrupt, p4prevBankrupt = update_prev('p4_bankrupt', gamemeta.getp4Bankrupt())
+		local _, p5currBankrupt, p5prevBankrupt = update_prev('p5_bankrupt', gamemeta.getp5Bankrupt())
+		local _, p6currBankrupt, p6prevBankrupt = update_prev('p6_bankrupt', gamemeta.getp6Bankrupt())
+		local _, p7currBankrupt, p7prevBankrupt = update_prev('p7_bankrupt', gamemeta.getp7Bankrupt())
+		local _, p8currBankrupt, p8prevBankrupt = update_prev('p8_bankrupt', gamemeta.getp8Bankrupt())
 		
-		local p1currBankrupt = gamemeta.getp1Bankrupt()
-		local p2currBankrupt = gamemeta.getp2Bankrupt()
-		local p3currBankrupt = gamemeta.getp3Bankrupt()
-		local p4currBankrupt = gamemeta.getp4Bankrupt()
-		local p5currBankrupt = gamemeta.getp5Bankrupt()
-		local p6currBankrupt = gamemeta.getp6Bankrupt()
-		local p7currBankrupt = gamemeta.getp7Bankrupt()
-		local p8currBankrupt = gamemeta.getp8Bankrupt()
-		
-		local p1currMoney = gamemeta.getp1Money()
-		local p2currMoney = gamemeta.getp2Money()
-		local p3currMoney = gamemeta.getp3Money()
-		local p4currMoney = gamemeta.getp4Money()
-		local p5currMoney = gamemeta.getp5Money()
-		local p6currMoney = gamemeta.getp6Money()
-		local p7currMoney = gamemeta.getp7Money()
-		local p8currMoney = gamemeta.getp8Money()
+		local _, p1currMoney, p1prevMoney = update_prev('p1_money', gamemeta.getp1Money())
+		local _, p2currMoney, p2prevMoney = update_prev('p2_money', gamemeta.getp2Money())
+		local _, p3currMoney, p3prevMoney = update_prev('p3_money', gamemeta.getp3Money())
+		local _, p4currMoney, p4prevMoney = update_prev('p4_money', gamemeta.getp4Money())
+		local _, p5currMoney, p5prevMoney = update_prev('p5_money', gamemeta.getp5Money())
+		local _, p6currMoney, p6prevMoney = update_prev('p6_money', gamemeta.getp6Money())
+		local _, p7currMoney, p7prevMoney = update_prev('p7_money', gamemeta.getp7Money())
+		local _, p8currMoney, p8prevMoney = update_prev('p8_money', gamemeta.getp8Money())
 		
 		-- check all the property statuses
 		-- each byte includes "owned," "owned by whom," "in a monopoly," "has buildings," "mortgaged," etc.
 		-- these also, critically, change on the same frame as money changes
 		
-		local currSpace01 = gamemeta.getSpace01()
-		local currSpace03 = gamemeta.getSpace03()
-		local currSpace05 = gamemeta.getSpace05()
-		local currSpace06 = gamemeta.getSpace06()
-		local currSpace08 = gamemeta.getSpace08()
-		local currSpace09 = gamemeta.getSpace09()
-		local currSpace11 = gamemeta.getSpace11()
-		local currSpace12 = gamemeta.getSpace12()
-		local currSpace13 = gamemeta.getSpace13()
-		local currSpace14 = gamemeta.getSpace14()
-		local currSpace15 = gamemeta.getSpace15()
-		local currSpace16 = gamemeta.getSpace16()
-		local currSpace18 = gamemeta.getSpace18()
-		local currSpace19 = gamemeta.getSpace19()
-		local currSpace21 = gamemeta.getSpace21()
-		local currSpace23 = gamemeta.getSpace23()
-		local currSpace24 = gamemeta.getSpace24()
-		local currSpace25 = gamemeta.getSpace25()
-		local currSpace26 = gamemeta.getSpace26()
-		local currSpace27 = gamemeta.getSpace27()
-		local currSpace28 = gamemeta.getSpace28()
-		local currSpace29 = gamemeta.getSpace29()
-		local currSpace31 = gamemeta.getSpace31()
-		local currSpace32 = gamemeta.getSpace32()
-		local currSpace34 = gamemeta.getSpace34()
-		local currSpace35 = gamemeta.getSpace35()
-		local currSpace37 = gamemeta.getSpace37()
-		local currSpace39 = gamemeta.getSpace39()
-
-		-- retrieve previous human/jail/bankrupt/money before backup
-		
-		local prevInEditor = gamemeta.prevInEditor
-		
-		local p1prevHuman = data.p1prevHuman
-		local p2prevHuman = data.p2prevHuman
-		local p3prevHuman = data.p3prevHuman
-		local p4prevHuman = data.p4prevHuman
-		local p5prevHuman = data.p5prevHuman
-		local p6prevHuman = data.p6prevHuman
-		local p7prevHuman = data.p7prevHuman
-		local p8prevHuman = data.p8prevHuman
-		
-		local p1prevInJail = data.p1prevInJail
-		local p2prevInJail = data.p2prevInJail
-		local p3prevInJail = data.p3prevInJail
-		local p4prevInJail = data.p4prevInJail
-		local p5prevInJail = data.p5prevInJail
-		local p6prevInJail = data.p6prevInJail
-		local p7prevInJail = data.p7prevInJail
-		local p8prevInJail = data.p8prevInJail
-		
-		local p1prevBankrupt = data.p1prevBankrupt
-		local p2prevBankrupt = data.p2prevBankrupt
-		local p3prevBankrupt = data.p3prevBankrupt
-		local p4prevBankrupt = data.p4prevBankrupt
-		local p5prevBankrupt = data.p5prevBankrupt
-		local p6prevBankrupt = data.p6prevBankrupt
-		local p7prevBankrupt = data.p7prevBankrupt
-		local p8prevBankrupt = data.p8prevBankrupt
-		
-		local p1prevMoney = data.p1prevMoney
-		local p2prevMoney = data.p2prevMoney
-		local p3prevMoney = data.p3prevMoney
-		local p4prevMoney = data.p4prevMoney
-		local p5prevMoney = data.p5prevMoney
-		local p6prevMoney = data.p6prevMoney
-		local p7prevMoney = data.p7prevMoney
-		local p8prevMoney = data.p8prevMoney
-		
-		local prevSpace01 = data.prevSpace01
-		local prevSpace03 = data.prevSpace03
-		local prevSpace05 = data.prevSpace05
-		local prevSpace06 = data.prevSpace06
-		local prevSpace08 = data.prevSpace08
-		local prevSpace09 = data.prevSpace09
-		local prevSpace11 = data.prevSpace11
-		local prevSpace12 = data.prevSpace12
-		local prevSpace13 = data.prevSpace13
-		local prevSpace14 = data.prevSpace14
-		local prevSpace15 = data.prevSpace15
-		local prevSpace16 = data.prevSpace16
-		local prevSpace18 = data.prevSpace18
-		local prevSpace19 = data.prevSpace19
-		local prevSpace21 = data.prevSpace21
-		local prevSpace23 = data.prevSpace23
-		local prevSpace24 = data.prevSpace24
-		local prevSpace25 = data.prevSpace25
-		local prevSpace26 = data.prevSpace26
-		local prevSpace27 = data.prevSpace27
-		local prevSpace28 = data.prevSpace28
-		local prevSpace29 = data.prevSpace29
-		local prevSpace31 = data.prevSpace31
-		local prevSpace32 = data.prevSpace32
-		local prevSpace34 = data.prevSpace34
-		local prevSpace35 = data.prevSpace35
-		local prevSpace37 = data.prevSpace37
-		local prevSpace39 = data.prevSpace39
-		
-		data.prevInEditor = currInEditor
-		
-		data.p1prevHuman = p1currHuman
-		data.p2prevHuman = p2currHuman
-		data.p3prevHuman = p3currHuman
-		data.p4prevHuman = p4currHuman
-		data.p5prevHuman = p5currHuman
-		data.p6prevHuman = p6currHuman
-		data.p7prevHuman = p7currHuman
-		data.p8prevHuman = p8currHuman
-		
-		data.p1prevInJail = p1currInJail
-		data.p2prevInJail = p2currInJail
-		data.p3prevInJail = p3currInJail
-		data.p4prevInJail = p4currInJail
-		data.p5prevInJail = p5currInJail
-		data.p6prevInJail = p6currInJail
-		data.p7prevInJail = p7currInJail
-		data.p8prevInJail = p8currInJail
-
-		data.p1prevBankrupt = p1currBankrupt
-		data.p2prevBankrupt = p2currBankrupt
-		data.p3prevBankrupt = p3currBankrupt
-		data.p4prevBankrupt = p4currBankrupt
-		data.p5prevBankrupt = p5currBankrupt
-		data.p6prevBankrupt = p6currBankrupt
-		data.p7prevBankrupt = p7currBankrupt
-		data.p8prevBankrupt = p8currBankrupt
-
-		data.p1prevMoney = p1currMoney
-		data.p2prevMoney = p2currMoney
-		data.p3prevMoney = p3currMoney
-		data.p4prevMoney = p4currMoney
-		data.p5prevMoney = p5currMoney
-		data.p6prevMoney = p6currMoney
-		data.p7prevMoney = p7currMoney
-		data.p8prevMoney = p8currMoney
-		
-		data.prevSpace01 = currSpace01
-		data.prevSpace03 = currSpace03
-		data.prevSpace05 = currSpace05
-		data.prevSpace06 = currSpace06
-		data.prevSpace08 = currSpace08
-		data.prevSpace09 = currSpace09
-		data.prevSpace11 = currSpace11
-		data.prevSpace12 = currSpace12
-		data.prevSpace13 = currSpace13
-		data.prevSpace14 = currSpace14
-		data.prevSpace15 = currSpace15
-		data.prevSpace16 = currSpace16
-		data.prevSpace18 = currSpace18
-		data.prevSpace19 = currSpace19
-		data.prevSpace21 = currSpace21
-		data.prevSpace23 = currSpace23
-		data.prevSpace24 = currSpace24
-		data.prevSpace25 = currSpace25
-		data.prevSpace26 = currSpace26
-		data.prevSpace27 = currSpace27
-		data.prevSpace28 = currSpace28
-		data.prevSpace29 = currSpace29
-		data.prevSpace31 = currSpace31
-		data.prevSpace32 = currSpace32
-		data.prevSpace34 = currSpace34
-		data.prevSpace35 = currSpace35
-		data.prevSpace37 = currSpace37
-		data.prevSpace39 = currSpace39
+		local changedSpace01, currSpace01, prevSpace01 = update_prev('space_01', gamemeta.getSpace01())
+		local changedSpace03, currSpace03, prevSpace03 = update_prev('space_03', gamemeta.getSpace03())
+		local changedSpace05, currSpace05, prevSpace05 = update_prev('space_05', gamemeta.getSpace05())
+		local changedSpace06, currSpace06, prevSpace06 = update_prev('space_06', gamemeta.getSpace06())
+		local changedSpace08, currSpace08, prevSpace08 = update_prev('space_08', gamemeta.getSpace08())
+		local changedSpace09, currSpace09, prevSpace09 = update_prev('space_09', gamemeta.getSpace09())
+		local changedSpace11, currSpace11, prevSpace11 = update_prev('space_11', gamemeta.getSpace11())
+		local changedSpace12, currSpace12, prevSpace12 = update_prev('space_12', gamemeta.getSpace12())
+		local changedSpace13, currSpace13, prevSpace13 = update_prev('space_13', gamemeta.getSpace13())
+		local changedSpace14, currSpace14, prevSpace14 = update_prev('space_14', gamemeta.getSpace14())
+		local changedSpace15, currSpace15, prevSpace15 = update_prev('space_15', gamemeta.getSpace15())
+		local changedSpace16, currSpace16, prevSpace16 = update_prev('space_16', gamemeta.getSpace16())
+		local changedSpace18, currSpace18, prevSpace18 = update_prev('space_18', gamemeta.getSpace18())
+		local changedSpace19, currSpace19, prevSpace19 = update_prev('space_19', gamemeta.getSpace19())
+		local changedSpace21, currSpace21, prevSpace21 = update_prev('space_21', gamemeta.getSpace21())
+		local changedSpace23, currSpace23, prevSpace23 = update_prev('space_23', gamemeta.getSpace23())
+		local changedSpace24, currSpace24, prevSpace24 = update_prev('space_24', gamemeta.getSpace24())
+		local changedSpace25, currSpace25, prevSpace25 = update_prev('space_25', gamemeta.getSpace25())
+		local changedSpace26, currSpace26, prevSpace26 = update_prev('space_26', gamemeta.getSpace26())
+		local changedSpace27, currSpace27, prevSpace27 = update_prev('space_27', gamemeta.getSpace27())
+		local changedSpace28, currSpace28, prevSpace28 = update_prev('space_28', gamemeta.getSpace28())
+		local changedSpace29, currSpace29, prevSpace29 = update_prev('space_29', gamemeta.getSpace29())
+		local changedSpace31, currSpace31, prevSpace31 = update_prev('space_31', gamemeta.getSpace31())
+		local changedSpace32, currSpace32, prevSpace32 = update_prev('space_32', gamemeta.getSpace32())
+		local changedSpace34, currSpace34, prevSpace34 = update_prev('space_34', gamemeta.getSpace34())
+		local changedSpace35, currSpace35, prevSpace35 = update_prev('space_35', gamemeta.getSpace35())
+		local changedSpace37, currSpace37, prevSpace37 = update_prev('space_37', gamemeta.getSpace37())
+		local changedSpace39, currSpace39, prevSpace39 = update_prev('space_39', gamemeta.getSpace39())
 		
 		-- start by ruling out times to swap
 		if
 			-- you are manually editing money before game
 			currInEditor == 1 or
 			-- any of the property values changed on the same frame
-			currSpace01 ~= prevSpace01 or
-			currSpace03 ~= prevSpace03 or
-			currSpace05 ~= prevSpace05 or
-			currSpace06 ~= prevSpace06 or
-			currSpace08 ~= prevSpace08 or
-			currSpace09 ~= prevSpace09 or
-			currSpace11 ~= prevSpace11 or
-			currSpace12 ~= prevSpace12 or
-			currSpace13 ~= prevSpace13 or
-			currSpace14 ~= prevSpace14 or
-			currSpace15 ~= prevSpace15 or
-			currSpace16 ~= prevSpace16 or
-			currSpace18 ~= prevSpace18 or
-			currSpace19 ~= prevSpace19 or
-			currSpace21 ~= prevSpace21 or
-			currSpace23 ~= prevSpace23 or
-			currSpace24 ~= prevSpace24 or
-			currSpace25 ~= prevSpace25 or
-			currSpace26 ~= prevSpace26 or
-			currSpace27 ~= prevSpace27 or
-			currSpace28 ~= prevSpace28 or
-			currSpace29 ~= prevSpace29 or
-			currSpace31 ~= prevSpace31 or
-			currSpace32 ~= prevSpace32 or
-			currSpace34 ~= prevSpace34 or
-			currSpace35 ~= prevSpace35 or
-			currSpace37 ~= prevSpace37 or
-			currSpace39 ~= prevSpace39 or
+			changedSpace01 or changedSpace03 or
+			changedSpace05 or changedSpace06 or
+			changedSpace08 or changedSpace09 or
+			changedSpace11 or changedSpace12 or
+			changedSpace13 or changedSpace14 or
+			changedSpace15 or changedSpace16 or
+			changedSpace18 or changedSpace19 or
+			changedSpace21 or changedSpace23 or
+			changedSpace24 or changedSpace25 or
+			changedSpace26 or changedSpace27 or
+			changedSpace28 or changedSpace29 or
+			changedSpace31 or changedSpace32 or
+			changedSpace34 or changedSpace35 or
+			changedSpace37 or changedSpace39 or
 			-- there are no active players, like on final screen or menus
-			((p1currBankrupt + p2currBankrupt + p3currBankrupt + p4currBankrupt + p5currBankrupt + p6currBankrupt + p7currBankrupt + p8currBankrupt) == 255*8)
+			((p1currBankrupt + p2currBankrupt + p3currBankrupt + p4currBankrupt +
+				p5currBankrupt + p6currBankrupt + p7currBankrupt + p8currBankrupt) == 255*8)
 		then
 			return false
 		end -- don't swap when any of those are true
