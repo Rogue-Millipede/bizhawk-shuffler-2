@@ -968,23 +968,22 @@ local function smk_swap(gamemeta)
 		-- 2p variables still get updated even if 2p is CPU, so we have to ignore all of those unless we are in 2p mode.
 		
 		return
-			(p1falling and p1currfall) or -- p1 just started falling into pit, lava, water
-			-- (p1shrinking and p1prevshrink == 0) or -- p1 just started shrinking, or got run over so frame timer dropped more than 1 unit
-			(p1moled and p1currmoled) or -- p1 just started shrinking
-			(p1bumping and -- p1 just started colliding AND EITHER
-				((p1coinschanged and p1currcoins < p1prevcoins) or -- coins dropped or
-				(p1currcoins == 0 and p1spinningout)) or  -- no coins and we just started spinning out
-				p1prevbump == 0 and p1currbump > 200) -- bump value goes this high when squished
+			(p1falling and p1currfall) -- p1 just started falling into pit, lava, water
+			-- or (p1shrinking and p1prevshrink == 0) -- p1 just started shrinking, or got run over so frame timer dropped more than 1 unit
+			or (p1moled and p1currmoled) -- p1 just started shrinking
+			or (p1bumping and -- p1 just started colliding AND EITHER
+				((p1coinschanged and p1currcoins < p1prevcoins) -- coins dropped or
+				or (p1currcoins == 0 and p1spinningout)) -- no coins and we just started spinning out
+				or p1prevbump == 0 and p1currbump > 200) -- bump value goes this high when squished
 			or
 			p2IsActive == true and (
-			
-			(p2falling and p2currfall) or -- p2 just started falling into pit, lava, water
-			-- (p2shrinking and p2prevshrink == 0) or -- p2 just started shrinking, or got run over so frame timer dropped more than 1 unit
-			(p2moled and p2currmoled) or -- p2 just started shrinking
-			(p2bumping and -- p2 just started colliding AND EITHER
-				((p2coinschanged and p2currcoins < p2prevcoins) or -- coins dropped or
-				(p2currcoins == 0 and p2spinningout)) or  -- no coins and we just started spinning out
-				p2prevbump == 0 and p2currbump > 200) -- bump value goes this high when squished
+			(p2falling and p2currfall) -- p2 just started falling into pit, lava, water
+			-- or (p2shrinking and p2prevshrink == 0) -- p2 just started shrinking, or got run over so frame timer dropped more than 1 unit
+			or (p2moled and p2currmoled) -- p2 just started shrinking
+			or (p2bumping and -- p2 just started colliding AND EITHER
+				((p2coinschanged and p2currcoins < p2prevcoins) -- coins dropped or
+				or (p2currcoins == 0 and p2spinningout)) -- no coins and we just started spinning out
+				or p2prevbump == 0 and p2currbump > 200) -- bump value goes this high when squished
 			)
 	end
 end
