@@ -1262,6 +1262,8 @@ local gamedata = {
 		maxhp=function() return 6 end,
 	},
 	['BT_NES_patched']={ -- Battletoads NES with bugfix patch
+		-- identical to unpatched? probably can remove
+		-- but test that first in case
 		func=battletoads_swap,
 		p1gethp=function() return math.ceil(memory.read_u8(0x051A, "RAM")/8) end,
 		p2gethp=function() return math.ceil(memory.read_u8(0x051B, "RAM")/8) end,
@@ -1318,6 +1320,8 @@ local gamedata = {
 		maxhp=function() return 6 end,
 	},
 	['BTDD_SNES_patched']={ -- Battletoads Double Dragon SNES
+		-- unlike the nes bugfix patch, this patch affects things elsewhere
+		-- so it stays for now
 		func=battletoads_swap,
 		p1gethp=function() return math.ceil(memory.read_u8(0x00003A, "WRAM")/8) end,
 		p2gethp=function() return math.ceil(memory.read_u8(0x00003C, "WRAM")/8) end,
