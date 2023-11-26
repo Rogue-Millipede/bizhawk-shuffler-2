@@ -446,10 +446,9 @@ end
 
 local function supermetroid_swap(gamemeta)
 	return function()
-		local currhp = gamemeta.gethp()
-		local hp_changed, hp, prev_hp= update_prev('hp', gamemeta.gethp())
+		local hp_changed, currhp, prev_hp = update_prev('hp', gamemeta.gethp())
 
-		local invuln_changed, invuln, prev_invuln= update_prev('invuln', gamemeta.getinvuln())
+		local invuln_changed, invuln, prev_invuln = update_prev('invuln', gamemeta.getinvuln())
 		-- when this variable is over 0, i-frames are on
 
 		local samusstate_changed, samusstate, prevsamusstate = update_prev('samusstate', gamemeta.getsamusstate())
@@ -471,13 +470,12 @@ local function SMZ3_swap(gamemeta)
 		end
 		
 		local currlinkhp = gamemeta.getlinkhp()
-		local currsamushp = gamemeta.getsamushp()
 		local currlinklc = gamemeta.getlinklc()
 		local currwhichgame = gamemeta.getwhichgame()
 
-		local samushp_changed, samushp, samusprev_hp= update_prev('samushp', gamemeta.getsamushp())
+		local samushp_changed, currsamushp, samusprev_hp = update_prev('samushp', gamemeta.getsamushp())
 
-		local invuln_changed, invuln, prev_invuln= update_prev('invuln', gamemeta.getinvuln())
+		local invuln_changed, invuln, prev_invuln = update_prev('invuln', gamemeta.getinvuln())
 		-- when this variable is over 0, i-frames are on
 
 		local samusstate_changed, samusstate, prevsamusstate = update_prev('samusstate', gamemeta.getsamusstate())
