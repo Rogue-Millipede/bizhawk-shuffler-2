@@ -1,7 +1,7 @@
 local plugin = {}
 
 plugin.name = "Battletoads+ Chaos Damage Shuffler"
-plugin.author = "Phiggle"
+plugin.author = "Phiggle, Rogue_Millipede"
 plugin.minversion = "2.6.3"
 plugin.settings =
 {
@@ -38,6 +38,7 @@ plugin.description =
 	-Super Mario Bros. 3 (NES), 1-2p (includes battle mode)
 	-Somari (NES, unlicensed), 1p
 	-Super Mario World (SNES), 1-2p
+	-Super Mario World 2: Yoshi's Island, 1p
 	-Super Mario All-Stars (SNES), 1-2p, with or without World (includes SMB3 battle mode)
 	-Super Mario Land (GB or GBC DX patch), 1p
 	-Super Mario Land 2: 6 Golden Coins (GB or GBC DX patch), 1p
@@ -1241,6 +1242,23 @@ local function Monopoly_NES_swap(gamemeta)
 	end
 end
 
+local function iframe_swap(gamemeta)
+	return function ()
+		-- check if we're in a valid gamestate
+		if not gamemeta.is_valid_gamestate() then
+			return false
+		end
+		-- assumptions: by default, the iframe counter is at 0
+		-- if iframes > 0, you got hit
+		local iframes_changed, iframes_curr, iframes_prev = update_prev('iframes', gamemeta.get_iframes())
+		if iframes_changed and iframes_prev == 0 then
+			return true
+		end
+		-- sometimes you want to swap for things that don't give iframes, like dying
+		return gamemeta.other_swaps()
+	end
+end
+
 -- Modified version of the gamedata for Mega Man games on NES.
 -- Battletoads NES shows 6 "boxes" that look like HP.
 -- But, each toad actually has a max HP of 47. Each box is basically 8 HP.
@@ -1912,23 +1930,57 @@ local gamedata = {
 		ActiveP1=function() return memory.read_u8(0x022C, "CartRAM") > 0 and memory.read_u8(0x022C, "CartRAM") < 255 end,
 	},
 	['SMW2YI_SNES']={ -- Super Mario World 2: Yoshi's Island
-		func=singleplayer_withlives_swap,
-		p1gethp=function()
-			if memory.read_u8(0x000CCC, "WRAM") > 0 then
-				return 1
-			else
-				return 2
-			end -- this value is >0 when yoshi is recoiling from damage
-		end,
-		p1getlc=function() return memory.read_u8(0x000379, "WRAM") end,
-		maxhp=function() return 2 end,
-		gmode=function() return
-			(memory.read_u16_le(0x000118, "WRAM") >=15 and memory.read_u16_le(0x000118, "WRAM") <=20 ) 
+		func=iframe_swap,
+		is_valid_gamestate=function() return
+			(memory.read_u16_le(0x000118, "WRAM") >= 15 and memory.read_u16_le(0x000118, "WRAM") <= 20 )
 			-- actively in a level or on retry screen
 			or (memory.read_u16_le(0x000118, "WRAM") == 48)
 			-- in a mini battle
 		end,
-		-- DID NOT SHUFFLE ON BEING EATEN BY PIRANHA PLANT
+		get_iframes=function() return memory.read_u8(0x000CCC, "WRAM") end,
+		-- technically this is the recoil timer and not iframes, but otherwise we'd shuffle twice from piranha plants
+		-- actual iframes at 0x01D6 CARTRAM
+		other_swaps=function()
+			-- touching a bandit changes baby state but not recoil or iframes
+			-- getting eaten by a piranha plant changes baby state
+			-- getting spat out by a piranha plant sets iframes but not recoil
+			-- known issue: getting eaten while baby mario is already freefloating won't shuffle
+			-- it's that or shuffling twice from piranhas (once on eat, once on spit out)
+			local baby_status = memory.read_u16_le(0x01B2, "CARTRAM")
+			local _, baby_safe_curr, baby_safe_prev = update_prev("baby_safe", baby_status == 0x2000 or baby_status == 0x8000)
+			-- 0x0000 freefloating, 0x2000 super star, 0x4000 held by bandit/frog/etc, 0x8000 on yoshi's back
+			if not baby_safe_curr and baby_safe_prev then
+				return true
+			end
+			local lives_changed, lives_curr, lives_prev = update_prev("lives", memory.read_u8(0x000379, "WRAM"))
+			return lives_changed and lives_curr < lives_prev
+		end,
+		-- - piranha plant notes
+		-- loaded sprite ids in CARTRAM table starting at 0x1360, 96 bytes long
+		-- piranha plant/hootie swallow timer in CARTRAM table starting at 0x1AF6, 96 bytes long
+		-- position in sprite table and timer table doesn't match?
+		-- figuring out relation (pointer?) would allow shuffling when eaten without baby
+		-- piranha plant id 0x066, hootie clockwise 0x06D, hootie anticlockwise 0x06E
+		-- - bonus game notes, if i ever add shuffling on them
+		-- WRAM 0x0212: bonus id
+		-- 0 flip cards, 2 scratch and match, 4 drawing lots, 6 match cards, 8 roulette, 10 slot machine
+		-- WRAM 0x03A7: mini battle id
+		-- 0/2/4 throwing balloons, 8 gather coins, 10/12 popping balloons, 18 watermelon contest
+		-- already shuffle from recoil in gather coins and watermelon contest
+		-- - flip cards
+		-- WRAM 0x10F3: contents of latest card (10 = kamek), updated on button press
+		-- WRAM 0x10F4: card flip animation, 65528 when done
+		-- WRAM 0x1100: item count
+		-- 0x10F3 == 10 and 0x10F4 == 65528 and 0x1100 > 0
+		-- hit kamek with items in reserve
+		-- - roulette
+		-- WRAM 0x1179-0x117B: lives won (one byte per digit)
+		-- WRAM 0x117F: end flag
+		-- 0x1179 == 0, 0x117A == 0, 0x117B == 0, 0x117F == 1
+		-- roulette ended with 0 lives
+		-- need to disable lives check while in roulette
+		-- - throwing balloons
+		-- WRAM 0x1154: always 16 after losing?
 	},
 	['SM64_N64']={ -- Super Mario 64
 		func=singleplayer_withlives_swap,
