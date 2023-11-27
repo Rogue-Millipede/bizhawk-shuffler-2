@@ -1244,13 +1244,14 @@ end
 
 local function iframe_swap(gamemeta)
 	return function ()
+		-- for games where iframes always mean a swap
+		local iframes_changed, iframes_curr, iframes_prev = update_prev('iframes', gamemeta.get_iframes())
 		-- check if we're in a valid gamestate
 		if not gamemeta.is_valid_gamestate() then
 			return false
 		end
 		-- assumptions: by default, the iframe counter is at 0
 		-- if iframes > 0, you got hit
-		local iframes_changed, iframes_curr, iframes_prev = update_prev('iframes', gamemeta.get_iframes())
 		if iframes_changed and iframes_prev == 0 then
 			return true
 		end
