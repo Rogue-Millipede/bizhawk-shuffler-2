@@ -2058,10 +2058,17 @@ local gamedata = {
 		ActiveP1=function() return memory.read_u8(0x0045, "RAM") == 0 or memory.read_u8(0x0045, "RAM") == 64 end,
 	},
 	['CV2_NES']={ -- Castlevania II, NES
-		func=singleplayer_withlives_swap,
-		p1gethp=function() return memory.read_u8(0x0080, "RAM") end,
-		p1getlc=function() return memory.read_u8(0x0031, "RAM") end,
-		maxhp=function() return 80 end,
+		func=iframe_swap,
+		is_valid_gamestate=function()
+			local gamestate = memory.read_u8(0x0018, "RAM")
+			return gamestate >= 5 and gamestate <= 7
+			-- 5 main game, 6 one frame on death, 7 game over
+		end,
+		get_iframes=function() return memory.read_u8(0x04F8, "RAM") end,
+		other_swaps=function()
+			return memory.read_u8(0x0018, "RAM") == 7 -- game over
+				and get_iframes == 0 -- died from pit
+		end,
 		CanHaveInfiniteLives=true,
 		LivesWhichRAM=function() return "RAM" end,
 		MustDoInfiniteLivesOnFrame=function() return true end,
