@@ -2067,6 +2067,7 @@ local gamedata = {
 		end,
 		get_iframes=function() return memory.read_u8(0x04F8, "RAM") end,
 		other_swaps=function()
+			-- iframes are set on death, except if game overing from falling in a pit
 			return memory.read_u8(0x0018, "RAM") == 7 -- game over
 				and get_iframes == 0 -- died from pit
 		end,
