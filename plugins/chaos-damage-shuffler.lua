@@ -1260,6 +1260,41 @@ local function iframe_swap(gamemeta)
 	end
 end
 
+local function iframe_health_swap(gamemeta)
+	return function ()
+		-- for games where iframes can happen from things other than damage
+		local iframes_changed, iframes_curr, iframes_prev = update_prev('iframes', gamemeta.get_iframes())
+		local health_changed, health_curr, health_prev = update_prev('health', gamemeta.get_health())
+		-- check if we're in a valid gamestate
+		if not gamemeta.is_valid_gamestate() then
+			return false
+		end
+		-- assumptions: by default, the iframe counter is at 0
+		-- if iframes > 0, you got hit
+		if iframes_changed and iframes_prev == 0 and health_changed and health_curr < health_prev then
+			return true
+		end
+		-- sometimes you want to swap for things that don't give iframes, like dying
+		return gamemeta.other_swaps()
+	end
+end
+
+local function health_swap(gamemeta)
+	return function ()
+		-- for games where iframes are unhelpful
+		local health_changed, health_curr, health_prev = update_prev('health', gamemeta.get_health())
+		-- check if we're in a valid gamestate
+		if not gamemeta.is_valid_gamestate() then
+			return false
+		end
+		if health_changed and health_curr < health_prev then
+			return true
+		end
+		-- sometimes you want to swap for things that don't reduce health
+		return gamemeta.other_swaps()
+	end
+end
+
 -- Modified version of the gamedata for Mega Man games on NES.
 -- Battletoads NES shows 6 "boxes" that look like HP.
 -- But, each toad actually has a max HP of 47. Each box is basically 8 HP.
