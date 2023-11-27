@@ -2194,6 +2194,22 @@ local gamedata = {
 		maxlives=function() return 105 end,
 		ActiveP1=function() return true end, -- p1 is always active!
 	},
+	['CV_AoS']={
+		-- touching enemy during invincibility from final guard soul, julius backdash etc gives iframes despite not doing damage
+		-- dryad seed and succubus grab are weird about iframes
+		-- so forget the iframes
+		-- dryad and succubus will shuffle you repeatedly but stop on their own over time
+		func=health_swap,
+		is_valid_gamestate=function()
+			return memory.read_u8(0x000010, "EWRAM") == 4 -- in game
+				and memory.read_u16_le(0x000E3C, "EWRAM") == 0 -- not paused, so eating rotten food won't swap
+				-- there are multiple addresses that seem tied to pausing
+				-- and memory.read_u16_le(0x00055C, "EWRAM") ~= 1 -- picking up heart/money gives 1 iframe, don't shuffle there
+		end,
+		-- get_iframes=function() return memory.read_u16_le(0x00055C, "EWRAM") end,
+		get_health=function() return memory.read_u16_le(0x01327A, "EWRAM") end,
+		other_swaps=function() return false end,
+	},
 	['MPAINT_DPAD_SNES']={ -- Gnat Attack in Mario Paint for SNES
 		-- (I tested this with a version that can use the dpad for movement and face buttons for clicks)
 		func=singleplayer_withlives_swap,
