@@ -1243,56 +1243,53 @@ local function Monopoly_NES_swap(gamemeta)
 end
 
 local function iframe_swap(gamemeta)
-	return function ()
-		-- for games where iframes always mean a swap
-		local iframes_changed, iframes_curr, iframes_prev = update_prev('iframes', gamemeta.get_iframes())
-		-- check if we're in a valid gamestate
-		if not gamemeta.is_valid_gamestate() then
-			return false
-		end
-		-- assumptions: by default, the iframe counter is at 0
-		-- if iframes > 0, you got hit
-		if iframes_changed and iframes_prev == 0 then
-			return true
-		end
-		-- sometimes you want to swap for things that don't give iframes, like dying
-		return gamemeta.other_swaps()
+	-- for games where iframes always mean a swap
+	local iframes_changed, iframes_curr, iframes_prev = update_prev('iframes', gamemeta.get_iframes())
+	-- check if we're in a valid gamestate
+	if not gamemeta.is_valid_gamestate() then
+		return false
 	end
+	-- assumptions: by default, the iframe counter is at 0
+	-- if iframes > 0, you got hit
+	if iframes_changed and iframes_prev == 0 then
+		return true
+	end
+	-- sometimes you want to swap for things that don't give iframes, like dying
+	return gamemeta.other_swaps()
 end
 
 local function iframe_health_swap(gamemeta)
-	return function ()
-		-- for games where iframes can happen from things other than damage
-		local iframes_changed, iframes_curr, iframes_prev = update_prev('iframes', gamemeta.get_iframes())
-		local health_changed, health_curr, health_prev = update_prev('health', gamemeta.get_health())
-		-- check if we're in a valid gamestate
-		if not gamemeta.is_valid_gamestate() then
-			return false
-		end
-		-- assumptions: by default, the iframe counter is at 0
-		-- if iframes > 0, you got hit
-		if iframes_changed and iframes_prev == 0 and health_changed and health_curr < health_prev then
-			return true
-		end
-		-- sometimes you want to swap for things that don't give iframes, like dying
-		return gamemeta.other_swaps()
+	-- for games where iframes can happen from things other than damage
+	local iframes_changed, iframes_curr, iframes_prev = update_prev('iframes', gamemeta.get_iframes())
+	local health_changed, health_curr, health_prev = update_prev('health', gamemeta.get_health())
+	-- check if we're in a valid gamestate
+	if not gamemeta.is_valid_gamestate() then
+		return false
 	end
+	-- assumptions: by default, the iframe counter is at 0
+	-- if iframes > 0, you got hit
+	-- check 0 health for games that don't set iframes on death
+	if ((iframes_changed and iframes_prev == 0) or health_curr == 0)
+		and health_changed and health_curr < health_prev
+	then
+		return true
+	end
+	-- sometimes you want to swap for things that don't give iframes, like dying
+	return gamemeta.other_swaps()
 end
 
 local function health_swap(gamemeta)
-	return function ()
-		-- for games where iframes are unhelpful
-		local health_changed, health_curr, health_prev = update_prev('health', gamemeta.get_health())
-		-- check if we're in a valid gamestate
-		if not gamemeta.is_valid_gamestate() then
-			return false
-		end
-		if health_changed and health_curr < health_prev then
-			return true
-		end
-		-- sometimes you want to swap for things that don't reduce health
-		return gamemeta.other_swaps()
+	-- for games where iframes are unhelpful
+	local health_changed, health_curr, health_prev = update_prev('health', gamemeta.get_health())
+	-- check if we're in a valid gamestate
+	if not gamemeta.is_valid_gamestate() then
+		return false
 	end
+	if health_changed and health_curr < health_prev then
+		return true
+	end
+	-- sometimes you want to swap for things that don't reduce health
+	return gamemeta.other_swaps()
 end
 
 -- Modified version of the gamedata for Mega Man games on NES.
@@ -1966,7 +1963,7 @@ local gamedata = {
 		ActiveP1=function() return memory.read_u8(0x022C, "CartRAM") > 0 and memory.read_u8(0x022C, "CartRAM") < 255 end,
 	},
 	['SMW2YI_SNES']={ -- Super Mario World 2: Yoshi's Island
-		func=iframe_swap,
+		func=function() return iframe_swap end,
 		is_valid_gamestate=function() return
 			(memory.read_u16_le(0x000118, "WRAM") >= 15 and memory.read_u16_le(0x000118, "WRAM") <= 20 )
 			-- actively in a level or on retry screen
@@ -2199,7 +2196,7 @@ local gamedata = {
 		-- dryad seed and succubus grab are weird about iframes
 		-- so forget the iframes
 		-- dryad and succubus will shuffle you repeatedly but stop on their own over time
-		func=health_swap,
+		func=function() return health_swap end,
 		is_valid_gamestate=function()
 			return memory.read_u8(0x000010, "EWRAM") == 4 -- in game
 				and memory.read_u16_le(0x000E3C, "EWRAM") == 0 -- not paused, so eating rotten food won't swap
