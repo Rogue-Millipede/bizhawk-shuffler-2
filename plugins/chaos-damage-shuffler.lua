@@ -1292,6 +1292,17 @@ local function health_swap(gamemeta)
 	return gamemeta.other_swaps()
 end
 
+local function sotn_swap(gamemeta)
+	return function ()
+		if gamemeta.is_richter() then
+			-- richter's iframes are stored elsewhere than alucard's, couldn't find where
+			return health_swap(gamemeta)
+		else
+			return iframe_health_swap(gamemeta)
+		end
+	end
+end
+
 -- Modified version of the gamedata for Mega Man games on NES.
 -- Battletoads NES shows 6 "boxes" that look like HP.
 -- But, each toad actually has a max HP of 47. Each box is basically 8 HP.
@@ -2190,6 +2201,20 @@ local gamedata = {
 		p1livesaddr=function() return 0x008D end,
 		maxlives=function() return 105 end,
 		ActiveP1=function() return true end, -- p1 is always active!
+	},
+	["CV_SotN"]={
+		func=sotn_swap,
+		is_valid_gamestate=function()
+			return memory.read_u8(0x03C9A4, "MainRAM") == 1 -- in game, but also some other places like the konami logo?
+				and memory.read_u16_le(0x097BA4, "MainRAM") ~= 0 -- max hp, this should prevent incorrect swaps
+		end,
+		get_iframes=function() return memory.read_u16_le(0x13B5E8, "MainRAM") end,
+		get_health=function() return memory.read_u16_le(0x097BA0, "MainRAM") end,
+		is_richter=function()
+			return memory.read_u8(0x0974A0, "MainRAM") == 31 -- richter prologue
+				or memory.read_u8(0x03C9A0, "MainRAM") == 1 -- richter mode
+		end,
+		other_swaps=function() return false end,
 	},
 	['CV_AoS']={
 		-- touching enemy during invincibility from final guard soul, julius backdash etc gives iframes despite not doing damage
