@@ -2284,7 +2284,7 @@ local gamedata = {
 		get_health=function() return memory.read_u16_le(0x0F7410, "Main RAM") end,
 		other_swaps=function() return false end,
 	},
-	['CV_PoR']={ -- Portrait of Ruins, DS
+	['CV_PoR']={ -- Portrait of Ruin, DS
 		func=jonathan_charlotte_swap,
 		is_valid_gamestate=function() return memory.read_u8(0x0F6284, "Main RAM") == 2 end,
 		-- hopefully this works for richter/sisters/etc too, bizhawk won't let me import saves for ds games
