@@ -1254,7 +1254,9 @@ local function iframe_swap(gamemeta)
 		end
 		-- assumptions: by default, the iframe counter is at 0
 		-- if iframes > 0, you got hit
-		if iframes_changed and iframes_prev == 0 then
+		-- some games will let you take damage on 1 iframe left
+		-- (presumably, iframes go down to 0, then it checks for damage, then sets iframes back to max)
+		if iframes_changed and iframes_prev <= 1 then
 			return true
 		end
 		-- sometimes you want to swap for things that don't give iframes, like dying
@@ -1273,13 +1275,15 @@ local function iframe_health_swap(gamemeta)
 		end
 		-- assumptions: by default, the iframe counter is at 0
 		-- if iframes > 0, you got hit
+		-- some games will let you take damage on 1 iframe left
+		-- (presumably, iframes go down to 0, then it checks for damage, then sets iframes back to max)
 		-- check 0 health for games that don't set iframes on death
-		if ((iframes_changed and iframes_prev == 0) or health_curr == 0)
+		if ((iframes_changed and iframes_prev <= 1) or health_curr == 0)
 			and health_changed and health_curr < health_prev
 		then
 			return true
 		end
-		-- sometimes you want to swap for things that don't give iframes, like dying
+		-- sometimes you want to swap for things that don't give iframes
 		return gamemeta.other_swaps()
 	end
 end
