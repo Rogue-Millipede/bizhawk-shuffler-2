@@ -2221,7 +2221,7 @@ local gamedata = {
 		maxlives=function() return 105 end,
 		ActiveP1=function() return true end, -- p1 is always active!
 	},
-	["CV_SotN"]={
+	["CV_SotN"]={ -- Symphony of the Night, Playstation
 		func=sotn_swap,
 		is_valid_gamestate=function()
 			return memory.read_u8(0x03C9A4, "MainRAM") == 1 -- in game, but also some other places like the konami logo?
@@ -2234,7 +2234,7 @@ local gamedata = {
 				or memory.read_u8(0x03C9A0, "MainRAM") == 1 -- richter mode
 		end,
 	},
-	['CV_AoS']={
+	['CV_AoS']={ -- Aria of Sorrow, GBA
 		-- touching enemy during invincibility from final guard soul, julius backdash etc gives iframes despite not doing damage
 		-- dryad seed and succubus grab are weird about iframes
 		-- so forget the iframes
@@ -2250,7 +2250,7 @@ local gamedata = {
 		get_health=function() return memory.read_u16_le(0x01327A, "EWRAM") end,
 		other_swaps=function() return false end,
 	},
-	['CV_DoS']={
+	['CV_DoS']={ -- Dawn of Sorrow, DS
 		-- checking for iframes to not swap on devil soul use etc
 		func=iframe_health_swap,
 		is_valid_gamestate=function() return memory.read_u8(0x0C07E8, "Main RAM") == 2 end,
