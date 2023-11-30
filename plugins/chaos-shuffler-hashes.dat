@@ -36,6 +36,8 @@ ABD71FE01EBB201BCC133074DB1DD8C5253776C7 CV_AoS         -- Castlevania Aria of S
 CC0F25B8783FB83CB4588D1C111BDC18         CV_DoS         -- Castlevania Dawn of Sorrow DS (USA) (Decrypted)
 9618BA557F37542D62E8D947C7302C34         CV_DoS         -- Castlevania Dawn of Sorrow DS (USA) (Encrypted)
 -- add the DoS definitive edition hashes here, there's a lot of them
+FD269B247DCDEE553ED5E90AB71942FB         CV_PoR         -- Castlevania Portrait of Ruin DS (USA) (Decrypted)
+2EDD57540CAE45842FBD19C45A4214F9         CV_PoR         -- Castlevania Portrait of Ruin DS (USA) (Encrypted)
 
 -- Mario Block
 9286A2DB471D51713E9B75E68B47FFBF11E2D40B MB_NES           -- Mario Bros NES (WW)

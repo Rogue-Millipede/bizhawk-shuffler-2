@@ -55,6 +55,7 @@ plugin.description =
 	-Castlevania: Symphony of the Night (PSX), 1p
 	-Castlevania: Aria of Sorrow (GBA), 1p
 	-Castlevania: Dawn of Sorrow (DS), 1p
+	-Castlevania: Portrait of Ruin (DS), 1p
 	
 	ADDITIONAL GOODIES
 	-Anticipation (NES), up to 4 players, shuffles on incorrect player answers, correct CPU answers, and running out of time.
@@ -1322,6 +1323,30 @@ local function sotn_swap(gamemeta)
 	end
 end
 
+local function jonathan_charlotte_swap(gamemeta)
+	return function ()
+		-- wow! two iframe counters!
+		local j_iframes_changed, j_iframes_curr, j_iframes_prev = update_prev('jonathan iframes', gamemeta.get_jonathan_iframes())
+		local c_iframes_changed, c_iframes_curr, c_iframes_prev = update_prev('charlotte iframes', gamemeta.get_charlotte_iframes())
+		local health_changed, health_curr, health_prev = update_prev('health', gamemeta.get_health())
+		if not gamemeta.is_valid_gamestate() then
+			return false
+		end
+		-- unlike Symphony, Portrait sets iframes on death, don't need to check for that
+		if gamemeta.is_jonathan() and j_iframes_changed and j_iframes_prev <= 1
+			and health_changed and health_curr < health_prev
+		then
+			-- jonathan!
+			return true
+		elseif not gamemeta.is_jonathan() and c_iframes_changed and c_iframes_prev <= 1
+			and health_changed and health_curr < health_prev
+		then
+			-- charlotte!
+			return true
+		end
+	end
+end
+
 -- Modified version of the gamedata for Mega Man games on NES.
 -- Battletoads NES shows 6 "boxes" that look like HP.
 -- But, each toad actually has a max HP of 47. Each box is basically 8 HP.
@@ -2258,6 +2283,15 @@ local gamedata = {
 		get_iframes=function() return memory.read_u8(0x0CA9F3, "Main RAM") end,
 		get_health=function() return memory.read_u16_le(0x0F7410, "Main RAM") end,
 		other_swaps=function() return false end,
+	},
+	['CV_PoR']={ -- Portrait of Ruins, DS
+		func=jonathan_charlotte_swap,
+		is_valid_gamestate=function() return memory.read_u8(0x0F6284, "Main RAM") == 2 end,
+		-- hopefully this works for richter/sisters/etc too, bizhawk won't let me import saves for ds games
+		is_jonathan=function() return memory.read_u8(0x1120E2, "Main RAM") == 1 end,
+		get_jonathan_iframes=function() return memory.read_u8(0x0FCB45, "Main RAM") end,
+		get_charlotte_iframes=function() return memory.read_u8(0x0FCCA5, "Main RAM") end,
+		get_health=function() return memory.read_u16_le(0x11216C, "Main RAM") end,
 	},
 	['MPAINT_DPAD_SNES']={ -- Gnat Attack in Mario Paint for SNES
 		-- (I tested this with a version that can use the dpad for movement and face buttons for clicks)
