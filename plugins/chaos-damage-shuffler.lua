@@ -52,6 +52,8 @@ plugin.description =
 	-Castlevania: Dracula X (SNES), 1p
 	-Castlevania: Bloodlines (Genesis/Mega Drive), 1p
 	-Castlevania: Rondo of Blood (TG16-CD), 1p
+	-Castlevania: Symphony of the Night (PSX), 1p
+	-Castlevania: Aria of Sorrow (GBA), 1p
 	
 	ADDITIONAL GOODIES
 	-Anticipation (NES), up to 4 players, shuffles on incorrect player answers, correct CPU answers, and running out of time.
