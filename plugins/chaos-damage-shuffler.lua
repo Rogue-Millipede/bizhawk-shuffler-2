@@ -54,6 +54,7 @@ plugin.description =
 	-Castlevania: Rondo of Blood (TG16-CD), 1p
 	-Castlevania: Symphony of the Night (PSX), 1p
 	-Castlevania: Aria of Sorrow (GBA), 1p
+	-Castlevania: Dawn of Sorrow (DS), 1p
 	
 	ADDITIONAL GOODIES
 	-Anticipation (NES), up to 4 players, shuffles on incorrect player answers, correct CPU answers, and running out of time.
@@ -2249,6 +2250,15 @@ local gamedata = {
 		end,
 		-- get_iframes=function() return memory.read_u16_le(0x00055C, "EWRAM") end,
 		get_health=function() return memory.read_u16_le(0x01327A, "EWRAM") end,
+		other_swaps=function() return false end,
+	},
+	['CV_DoS']={
+		-- checking for iframes to not swap on devil soul use etc
+		func=iframe_health_swap,
+		is_valid_gamestate=function() return memory.read_u8(0x0C07E8, "Main RAM") == 2 end,
+		-- hopefully this works for julius/boss rush mode too, bizhawk won't let me import saves for ds games
+		get_iframes=function() return memory.read_u8(0x0CA9F3, "Main RAM") end,
+		get_health=function() return memory.read_u16_le(0x0F7410, "Main RAM") end,
 		other_swaps=function() return false end,
 	},
 	['MPAINT_DPAD_SNES']={ -- Gnat Attack in Mario Paint for SNES
