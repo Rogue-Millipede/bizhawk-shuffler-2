@@ -1319,7 +1319,6 @@ local function sotn_swap(gamemeta)
 		then
 			return true
 		end
-		return gamemeta.other_swaps()
 	end
 end
 
@@ -2234,7 +2233,6 @@ local gamedata = {
 			return memory.read_u8(0x0974A0, "MainRAM") == 31 -- richter prologue
 				or memory.read_u8(0x03C9A0, "MainRAM") == 1 -- richter mode
 		end,
-		other_swaps=function() return false end,
 	},
 	['CV_AoS']={
 		-- touching enemy during invincibility from final guard soul, julius backdash etc gives iframes despite not doing damage
