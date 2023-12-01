@@ -56,6 +56,7 @@ plugin.description =
 	-Castlevania: Aria of Sorrow (GBA), 1p
 	-Castlevania: Dawn of Sorrow (DS), 1p
 	-Castlevania: Portrait of Ruin (DS), 1p
+	-Castlevania: Order of Ecclesia (DS), 1p
 	
 	ADDITIONAL GOODIES
 	-Anticipation (NES), up to 4 players, shuffles on incorrect player answers, correct CPU answers, and running out of time.
@@ -2292,6 +2293,15 @@ local gamedata = {
 		get_jonathan_iframes=function() return memory.read_u8(0x0FCB45, "Main RAM") end,
 		get_charlotte_iframes=function() return memory.read_u8(0x0FCCA5, "Main RAM") end,
 		get_health=function() return memory.read_u16_le(0x11216C, "Main RAM") end,
+	},
+	['CV_OoE']={ -- Order of Ecclesia, DS
+		-- checking for iframes to not swap on dominus etc (except on death)
+		func=iframe_health_swap,
+		is_valid_gamestate=function() return memory.read_u8(0x12872A, "Main RAM") == 3 end,
+		-- hopefully this works for albus/boss rush mode too, bizhawk won't let me import saves for ds games
+		get_iframes=function() return memory.read_u8(0x1098E5, "Main RAM") end,
+		get_health=function() return memory.read_u16_le(0x1002B4, "Main RAM") end,
+		other_swaps=function() return false end,
 	},
 	['MPAINT_DPAD_SNES']={ -- Gnat Attack in Mario Paint for SNES
 		-- (I tested this with a version that can use the dpad for movement and face buttons for clicks)
