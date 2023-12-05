@@ -1247,31 +1247,17 @@ local function Monopoly_NES_swap(gamemeta)
 	end
 end
 
-local function iframe_swap(gamemeta)
-	return function()
-		-- for games where iframes always mean a swap
-		local iframes_changed, iframes_curr, iframes_prev = update_prev('iframes', gamemeta.get_iframes())
-		-- check if we're in a valid gamestate
-		if not gamemeta.is_valid_gamestate() then
-			return false
-		end
-		-- assumptions: by default, the iframe counter is at 0
-		-- if iframes > 0, you got hit
-		-- some games will let you take damage on 1 iframe left
-		-- (presumably, iframes go down to 0, then it checks for damage, then sets iframes back to max)
-		if iframes_changed and iframes_prev <= 1 then
-			return true
-		end
-		-- sometimes you want to swap for things that don't give iframes, like dying
-		return gamemeta.other_swaps()
-	end
-end
-
 local function iframe_health_swap(gamemeta)
 	return function()
-		-- for games where iframes can happen from things other than damage
 		local iframes_changed, iframes_curr, iframes_prev = update_prev('iframes', gamemeta.get_iframes())
-		local health_changed, health_curr, health_prev = update_prev('health', gamemeta.get_health())
+		local health_changed, health_curr, health_prev = false, 0, 0
+		if gamemeta.get_health then
+			health_changed, health_curr, health_prev = update_prev('health', gamemeta.get_health())
+		end
+		local iframe_minimum = 0
+		if gamemeta.iframe_minimum then
+			iframe_minimum = gamemeta.iframe_minimum()
+		end
 		-- check if we're in a valid gamestate
 		if not gamemeta.is_valid_gamestate() then
 			return false
@@ -1280,13 +1266,17 @@ local function iframe_health_swap(gamemeta)
 		-- if iframes > 0, you got hit
 		-- some games will let you take damage on 1 iframe left
 		-- (presumably, iframes go down to 0, then it checks for damage, then sets iframes back to max)
-		-- check 0 health for games that don't set iframes on death
-		if ((iframes_changed and iframes_prev <= 1) or health_curr == 0)
-			and health_changed and health_curr < health_prev
-		then
+		-- certain games do damage over time using a short iframe timer, so check a minimum iframe count to shuffle
+		local iframes_valid = iframes_changed and iframes_curr > iframes_prev and iframes_prev <= 1 and iframes_curr >= iframe_minimum
+		if gamemeta.get_health then
+			-- check 0 health for games that don't set iframes on death
+			if (iframes_valid or health_curr == 0) and health_changed and health_curr < health_prev then
+				return true
+			end
+		elseif iframes_valid then
 			return true
 		end
-		-- sometimes you want to swap for things that don't give iframes
+		-- sometimes you want to swap for things that don't give iframes and change health, like non-standard game overs
 		return gamemeta.other_swaps()
 	end
 end
@@ -2019,7 +2009,7 @@ local gamedata = {
 		ActiveP1=function() return memory.read_u8(0x022C, "CartRAM") > 0 and memory.read_u8(0x022C, "CartRAM") < 255 end,
 	},
 	['SMW2YI_SNES']={ -- Super Mario World 2: Yoshi's Island
-		func=iframe_swap,
+		func=iframe_health_swap,
 		is_valid_gamestate=function() return
 			(memory.read_u16_le(0x000118, "WRAM") >= 15 and memory.read_u16_le(0x000118, "WRAM") <= 20 )
 			-- actively in a level or on retry screen
@@ -2147,17 +2137,20 @@ local gamedata = {
 		ActiveP1=function() return memory.read_u8(0x0045, "RAM") == 0 or memory.read_u8(0x0045, "RAM") == 64 end,
 	},
 	['CV2_NES']={ -- Castlevania II, NES
-		func=iframe_swap,
+		func=iframe_health_swap,
 		is_valid_gamestate=function()
 			local gamestate = memory.read_u8(0x0018, "RAM")
 			return gamestate >= 5 and gamestate <= 7
 			-- 5 main game, 6 one frame on death, 7 game over
 		end,
 		get_iframes=function() return memory.read_u8(0x04F8, "RAM") end,
+		get_health = function() return memory.read_u8(0x0080, "RAM") end,
 		other_swaps=function()
-			-- iframes are set on death, except if game overing from falling in a pit
-			return memory.read_u8(0x0018, "RAM") == 7 -- game over
-				and get_iframes == 0 -- died from pit
+			local lives_changed, lives_curr, lives_prev = update_prev("lives", memory.read_u8(0x0031, "RAM"))
+			-- for some reason, non-game over deaths from enemy damage tick lives down in gamestate 5,
+			-- damage game overs tick lives down in gamestate 7, and pit deaths tick lives down in gamestate 6
+			-- damage deaths shuffle already, so only shuffle on lives dropping from falling in a pit
+			return lives_changed and lives_curr < lives_prev and memory.read_u8(0x0018, "RAM") == 6
 		end,
 		CanHaveInfiniteLives=true,
 		LivesWhichRAM=function() return "RAM" end,
