@@ -57,6 +57,9 @@ plugin.description =
 	-Castlevania: Dawn of Sorrow (DS), 1p
 	-Castlevania: Portrait of Ruin (DS), 1p
 	-Castlevania: Order of Ecclesia (DS), 1p
+
+	METROIDS
+	-Metroid Fusion (GBA), 1p
 	
 	ADDITIONAL GOODIES
 	-Anticipation (NES), up to 4 players, shuffles on incorrect player answers, correct CPU answers, and running out of time.
@@ -2295,6 +2298,29 @@ local gamedata = {
 		get_iframes=function() return memory.read_u8(0x1098E5, "Main RAM") end,
 		get_health=function() return memory.read_u16_le(0x1002B4, "Main RAM") end,
 		other_swaps=function() return false end,
+	},
+	['MetroidFusion']={ -- Metroid Fusion, GBA
+		func=iframe_health_swap,
+		is_valid_gamestate=function()
+			return memory.read_u8(0x0BDE, "IWRAM") == 1
+				-- don't shuffle on omega metroid forced hit
+				and not (memory.read_u8(0x002C, "IWRAM") == 0 -- area id: main deck
+					and memory.read_u8(0x002D, "IWRAM") == 63 -- room id: omega metroid room
+					and memory.read_u16_le(0x1310, "IWRAM") == 1 -- hp: omega metroid forced hit takes hp to 1
+					and memory.read_u8(0x1249, "IWRAM") == 48) -- iframes: you should still shuffle from time up while at 1 hp
+		end,
+		get_iframes=function() return memory.read_u8(0x1249, "IWRAM") end,
+		get_health=function() return memory.read_u16_le(0x1310, "IWRAM") end,
+		iframe_minimum=function() return 10 end,
+		-- SRX amoebas, TRO leech boss, TRO plant boss flowers, electric water
+		-- all do damage with short iframes rather than skipping iframes entirely like lava/heat
+		other_swaps=function()
+			-- check if we ran out of time (sector 3, secret lab, ending)
+			local time_up_changed, time_up_curr, _ = update_prev('time up', memory.read_u8(0x08D7, "IWRAM") == 2)
+			-- 0: no timer, 1: timer on, 2: timer just ran out
+			return time_up_changed and time_up_curr, 65
+			-- add extra delay so you get the whiteout animation before shuffling
+		end,
 	},
 	['MPAINT_DPAD_SNES']={ -- Gnat Attack in Mario Paint for SNES
 		-- (I tested this with a version that can use the dpad for movement and face buttons for clicks)
