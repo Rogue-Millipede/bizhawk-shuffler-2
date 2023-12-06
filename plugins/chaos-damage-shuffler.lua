@@ -60,6 +60,7 @@ plugin.description =
 
 	METROIDS
 	-Metroid (NES), 1p
+	-Metroid II (GB), 1p
 	-Metroid Fusion (GBA), 1p
 	-Metroid Zero Mission (GBA), 1p
 	
@@ -2323,6 +2324,15 @@ local gamedata = {
 			-- set to 0xFFFF when timer is off, counts down in decimal mode from 0x9999 while on, set to 0xFF00 when time runs out
 			return time_up_changed and time_up_curr
 		end,
+	},
+	['Metroid2']={
+		func=iframe_health_swap,
+		is_valid_gamestate=function() return memory.read_u8(0x1B, "HRAM") == 4 end,
+		get_iframes=function() return memory.read_u8(0x104F, "WRAM") end,
+		get_health=function() return memory.read_u16_le(0x1051, "WRAM") end,
+		-- like nes metroid, health is stored in decimal mode
+		other_swaps=function() return false end,
+		-- no escape sequence this game
 	},
 	['MetroidFusion']={ -- Metroid Fusion, GBA
 		func=iframe_health_swap,
