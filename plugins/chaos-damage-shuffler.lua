@@ -61,6 +61,7 @@ plugin.description =
 	METROIDS
 	-Metroid (NES), 1p
 	-Metroid Fusion (GBA), 1p
+	-Metroid Zero Mission (GBA), 1p
 	
 	ADDITIONAL GOODIES
 	-Anticipation (NES), up to 4 players, shuffles on incorrect player answers, correct CPU answers, and running out of time.
@@ -2304,6 +2305,7 @@ local gamedata = {
 		-- bomb jumping sets iframes, so must check health too
 		-- but health decreases one frame before iframes are set
 		-- so only check health, and instead of iframes, consider lava/metroid states invalid
+		-- update zero mission's nes mode if you change this
 		func=health_swap,
 		is_valid_gamestate=function()
 			return memory.read_u8(0x001D, "RAM") == 0 -- in game
@@ -2343,6 +2345,52 @@ local gamedata = {
 			-- 0: no timer, 1: timer on, 2: timer just ran out
 			return time_up_changed and time_up_curr, 65
 			-- add extra delay so you get the whiteout animation before shuffling
+		end,
+	},
+	['MetroidZero']={
+		func=iframe_health_swap,
+		is_valid_gamestate=function()
+			return memory.read_u8(0x0C70, "IWRAM") == 4 -- main game
+				or memory.read_u8(0x0C70, "IWRAM") == 7 -- nes metroid
+		end,
+		get_iframes=function()
+			if memory.read_u8(0x0C70, "IWRAM") == 7 then -- nes metroid
+				return 0 -- don't use the main shuffle function in nes metroid
+			end
+			return memory.read_u8(0x13DA, "IWRAM")
+		end,
+		get_health=function()
+			if memory.read_u8(0x0C70, "IWRAM") == 7 then -- nes metroid
+				return 1 -- don't use the main shuffle function in nes metroid
+			end
+			return memory.read_u16_le(0x1536, "IWRAM")
+		end,
+		iframe_minimum=function() return 16 end,
+		-- hp-draining purple bugs do 15 iframes, metroids do 3
+		other_swaps=function()
+			-- check if we ran out of time (mother brain, mecha-ridley)
+			local time_up_changed, time_up_curr, _ = update_prev('time up', memory.read_u8(0x095C, "IWRAM") == 2)
+			-- 0: no timer, 1: timer on, 2: timer just ran out
+			if time_up_changed and time_up_curr then
+				return true, 65
+				-- add extra delay so you get the whiteout animation before shuffling
+			end
+			-- nes metroid shuffle, ram offsets are +0x7200 from nes version
+			-- update nes metroid section if you change this
+			--local nes_health_changed, nes_health_curr, nes_health_prev
+			--local nes_time_up_changed, nes_time_up_curr
+			if memory.read_u8(0x0C70, "IWRAM") == 7 then
+				local nes_health_changed, nes_health_curr, nes_health_prev = update_prev('nes health', memory.read_u16_le(0x7306, "IWRAM"))
+				local nes_time_up_changed, nes_time_up_curr, _ = update_prev('nes time up', memory.read_u16_le(0x730A, "IWRAM") == 0xFF00)
+				return memory.read_u8(0x721D, "IWRAM") == 0 -- in game
+					and memory.read_u8(0x721E, "IWRAM") == 3 -- in game
+					and ((memory.read_u8(0x7264, "IWRAM") == 0 -- not in lava/acid
+							and memory.read_u8(0x7292, "IWRAM") == 0) -- not being drained by a metroid
+						or memory.read_u16_le(0x7306, "IWRAM") == 0) -- 0 hp, want to shuffle on lava/metroid death
+					and ((nes_health_changed and nes_health_curr < nes_health_prev) -- hp dropped
+						or (nes_time_up_changed and nes_time_up_curr)) -- escape timer ran out
+			end
+			return false
 		end,
 	},
 	['MPAINT_DPAD_SNES']={ -- Gnat Attack in Mario Paint for SNES
