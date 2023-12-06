@@ -59,6 +59,7 @@ plugin.description =
 	-Castlevania: Order of Ecclesia (DS), 1p
 
 	METROIDS
+	-Metroid (NES), 1p
 	-Metroid Fusion (GBA), 1p
 	
 	ADDITIONAL GOODIES
@@ -2298,6 +2299,28 @@ local gamedata = {
 		get_iframes=function() return memory.read_u8(0x1098E5, "Main RAM") end,
 		get_health=function() return memory.read_u16_le(0x1002B4, "Main RAM") end,
 		other_swaps=function() return false end,
+	},
+	['MetroidNes']={ -- Metroid, NES
+		-- bomb jumping sets iframes, so must check health too
+		-- but health decreases one frame before iframes are set
+		-- so only check health, and instead of iframes, consider lava/metroid states invalid
+		func=health_swap,
+		is_valid_gamestate=function()
+			return memory.read_u8(0x001D, "RAM") == 0 -- in game
+				and memory.read_u8(0x001E, "RAM") == 3 -- in game
+				and ((memory.read_u8(0x0064, "RAM") == 0 -- not in lava/acid
+						and memory.read_u8(0x0092, "RAM") == 0) -- not being drained by a metroid
+					or memory.read_u16_le(0x0106, "RAM") == 0) -- 0 hp, want to shuffle on lava/metroid death
+		end,
+		-- get_iframes=function() return memory.read_u8(0x0070, "RAM") end,
+		get_health=function() return memory.read_u16_le(0x0106, "RAM") end,
+		-- technically this isn't your *actual* health, it's stored in decimal mode, but for our comparison purposes it works
+		other_swaps=function()
+			-- shuffle if escape timer runs out
+			local time_up_changed, time_up_curr, _ = update_prev('time up', memory.read_u16_le(0x010A, "RAM") == 0xFF00)
+			-- set to 0xFFFF when timer is off, counts down in decimal mode from 0x9999 while on, set to 0xFF00 when time runs out
+			return time_up_changed and time_up_curr
+		end,
 	},
 	['MetroidFusion']={ -- Metroid Fusion, GBA
 		func=iframe_health_swap,
