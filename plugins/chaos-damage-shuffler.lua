@@ -24,13 +24,13 @@ plugin.description =
 	
 	Currently supports (ALL NTSC-U):
 	
-	BATTLETOADS
+	BATTLETOADS BLOCK
 	-Battletoads (NES), 1p or 2p - also works with the bugfix patch by Ti: https://www.romhacking.net/hacks/2528/
 	-Battletoads in Battlemaniacs (SNES), 1p or 2p
 	-Battletoads-Double Dragon (NES), 1p or 2p
 	-Battletoads-Double Dragon (SNES), 1p or 2p, including if patched to use level select by default (see instructions)
 	
-	MARIOS
+	MARIO BLOCK
 	-Mario Bros. (NES), 1-2p
 	-Super Mario Bros. (NES), 1-2p
 	-Super Mario Bros. 2 JP ("Lost Levels"), NES version, 1p
@@ -44,7 +44,7 @@ plugin.description =
 	-Super Mario Land 2: 6 Golden Coins (GB or GBC DX patch), 1p
 	-Super Mario 64 (N64), 1p
 	
-	CASTLEVANIAS
+	CASTLEVANIA BLOCK
 	-Castlevania (NES), 1p
 	-Castlevania II (NES), 1p
 	-Castlevania III (NES, or Famicom with translation patch), 1p
@@ -58,7 +58,7 @@ plugin.description =
 	-Castlevania: Portrait of Ruin (DS), 1p
 	-Castlevania: Order of Ecclesia (DS), 1p
 
-	METROIDS
+	METROID BLOCK
 	-Metroid (NES), 1p
 	-Metroid II (GB), 1p
 	-Metroid Fusion (GBA), 1p
