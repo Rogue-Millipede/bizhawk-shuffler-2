@@ -63,6 +63,9 @@ plugin.description =
 	-Metroid II (GB), 1p
 	-Metroid Fusion (GBA), 1p
 	-Metroid Zero Mission (GBA), 1p
+
+	ZELDA BLOCK
+	-The Legend of Zelda (NES), 1p
 	
 	ADDITIONAL GOODIES
 	-Anticipation (NES), up to 4 players, shuffles on incorrect player answers, correct CPU answers, and running out of time.
@@ -2402,6 +2405,22 @@ local gamedata = {
 			end
 			return false
 		end,
+	},
+	['Zelda_1']={ -- The Legend of Zelda, NES
+		func=iframe_health_swap,
+		is_valid_gamestate=function()
+			local gamestate = memory.read_u8(0x0012, "RAM")
+			return gamestate == 5 or gamestate == 17
+			-- 5: main game, 17: dying (set same frame as health reaching 0)
+		end,
+		get_iframes=function() return memory.read_u8(0x04F0, "RAM") end,
+		get_health=function()
+			local fullHearts = bit.band(memory.read_u8(0x066F, "RAM"), 0x0F)
+			-- other half of this byte tracks max health
+			local partialHeart = memory.read_u8(0x0670, "RAM")
+			return fullHearts * 0x100 + partialHeart
+		end,
+		other_swaps=function() return false end,
 	},
 	['MPAINT_DPAD_SNES']={ -- Gnat Attack in Mario Paint for SNES
 		-- (I tested this with a version that can use the dpad for movement and face buttons for clicks)
