@@ -2328,7 +2328,7 @@ local gamedata = {
 			return time_up_changed and time_up_curr
 		end,
 	},
-	['Metroid2']={
+	['Metroid2']={ -- Metroid II Return of Samus, GB
 		func=iframe_health_swap,
 		is_valid_gamestate=function() return memory.read_u8(0x1B, "HRAM") == 4 end,
 		get_iframes=function() return memory.read_u8(0x104F, "WRAM") end,
@@ -2360,7 +2360,7 @@ local gamedata = {
 			-- add extra delay so you get the whiteout animation before shuffling
 		end,
 	},
-	['MetroidZero']={
+	['MetroidZero']={ -- Metroid Zero Mission, GBA
 		func=iframe_health_swap,
 		is_valid_gamestate=function()
 			return memory.read_u8(0x0C70, "IWRAM") == 4 -- main game
