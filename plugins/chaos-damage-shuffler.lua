@@ -66,6 +66,7 @@ plugin.description =
 
 	ZELDA BLOCK
 	-The Legend of Zelda (NES), 1p
+	-Zelda II The Adventure of Link (NES), 1p
 	
 	ADDITIONAL GOODIES
 	-Anticipation (NES), up to 4 players, shuffles on incorrect player answers, correct CPU answers, and running out of time.
@@ -2421,6 +2422,26 @@ local gamedata = {
 			return fullHearts * 0x100 + partialHeart
 		end,
 		other_swaps=function() return false end,
+	},
+	['Zelda_2']={ -- Zelda II The Adventure of Link, NES
+		func=iframe_health_swap,
+		is_valid_gamestate=function()
+			local gamestate = memory.read_u8(0x0736, "RAM")
+			return gamestate == 11 -- main game
+				or gamestate == 4 -- lives reduced after death
+		end,
+		get_iframes=function() return memory.read_u8(0x050C, "RAM") end,
+		get_health=function() return memory.read_u8(0x0774, "RAM") end,
+		other_swaps=function()
+			-- we shuffle on death from enemies bringing us to 0 health,
+			-- but we need to shuffle on dying from pits too
+			local lives_changed, lives_curr, lives_prev = update_prev('lives', memory.read_u8(0x0700, "RAM"))
+			return lives_changed and lives_curr < lives_prev -- we have died
+				and memory.read_u8(0x0565, "RAM") ~= 0 -- died from instant death
+				-- get_health returns the "true" health value, this is the value used for the life bar
+				-- 0x0774 is set back to max health on the frame lives go down,
+				-- but 0x0565 isn't updated until link respawns, so we can use it to find how link died
+		end,
 	},
 	['MPAINT_DPAD_SNES']={ -- Gnat Attack in Mario Paint for SNES
 		-- (I tested this with a version that can use the dpad for movement and face buttons for clicks)
