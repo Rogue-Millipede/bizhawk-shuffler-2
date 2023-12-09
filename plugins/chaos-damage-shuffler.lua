@@ -2438,12 +2438,13 @@ local gamedata = {
 		other_swaps=function()
 			-- we shuffle on death from enemies bringing us to 0 health,
 			-- but we need to shuffle on dying from pits too
+			-- while zelda 2 has two addresses storing health values,
+			-- one of which resets when lives decrease and the other when link respawns,
+			-- zelda 2 redux removes the second one of these, so we must track what the value was last frame
 			local lives_changed, lives_curr, lives_prev = update_prev('lives', memory.read_u8(0x0700, "RAM"))
+			local _, _, health_prev = update_prev('health 2', memory.read_u8(0x0774, "RAM"))
 			return lives_changed and lives_curr < lives_prev -- we have died
-				and memory.read_u8(0x0565, "RAM") ~= 0 -- died from instant death
-				-- get_health returns the "true" health value, this is the value used for the life bar
-				-- 0x0774 is set back to max health on the frame lives go down,
-				-- but 0x0565 isn't updated until link respawns, so we can use it to find how link died
+				and health_prev ~= 0 -- died from instant death
 		end,
 	},
 	['MPAINT_DPAD_SNES']={ -- Gnat Attack in Mario Paint for SNES
