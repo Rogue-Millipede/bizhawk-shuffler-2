@@ -198,6 +198,9 @@ bt_snes_level_recoder = { 0, 1, 2, 3, 4, 6, 8, 7 } -- THIS GAME DOESN'T STORE LE
 -- update value in prevdata and return whether the value has changed, new value, and old value
 -- value is only considered changed if it wasn't nil before
 local function update_prev(key, value)
+	if key == nil or value == nil then
+		error("update_prev requires both a key and a value")
+	end
 	local prev_value = prevdata[key]
 	prevdata[key] = value
 	local changed = prev_value ~= nil and value ~= prev_value
