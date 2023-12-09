@@ -2414,8 +2414,8 @@ local gamedata = {
 		func=iframe_health_swap,
 		is_valid_gamestate=function()
 			local gamestate = memory.read_u8(0x0012, "RAM")
-			return gamestate == 5 or gamestate == 17
-			-- 5: main game, 17: dying (set same frame as health reaching 0)
+			return gamestate == 5 or gamestate == 9 or gamestate == 17
+			-- 5: main game, 9: side-scrolling, 17: dying (set same frame as health reaching 0)
 		end,
 		get_iframes=function() return memory.read_u8(0x04F0, "RAM") end,
 		get_health=function()
