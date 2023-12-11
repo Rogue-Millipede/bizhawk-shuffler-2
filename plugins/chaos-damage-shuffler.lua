@@ -60,7 +60,7 @@ plugin.description =
 
 	METROID BLOCK
 	-Metroid (NES), 1p
-	-Metroid II (GB), 1p
+	-Metroid II (GB or GBC color patch), 1p
 	-Metroid Fusion (GBA), 1p
 	-Metroid Zero Mission (GBA), 1p
 
