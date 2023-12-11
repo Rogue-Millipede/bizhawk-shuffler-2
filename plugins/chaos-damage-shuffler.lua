@@ -67,6 +67,8 @@ plugin.description =
 	ZELDA BLOCK
 	-The Legend of Zelda (NES), 1p
 	-Zelda II The Adventure of Link (NES), 1p
+	-Link's Awakening (GB), 1p
+	-Link's Awakening DX (GBC), 1p
 	
 	ADDITIONAL GOODIES
 	-Anticipation (NES), up to 4 players, shuffles on incorrect player answers, correct CPU answers, and running out of time.
@@ -1351,6 +1353,24 @@ local function jonathan_charlotte_swap(gamemeta)
 	end
 end
 
+local function damage_buffer_swap(gamemeta)
+	return function ()
+		-- games that instead of decreasing health directly, set a "damage buffer" value that then decreases health per frame
+		local iframes_changed, iframes_curr, iframes_prev = update_prev('iframes', gamemeta.get_iframes())
+		local buffer_changed, buffer_curr, buffer_prev = update_prev('damage buffer', gamemeta.get_damage_buffer())
+		if not gamemeta.is_valid_gamestate() then
+			return false
+		end
+		if iframes_changed and iframes_prev == 0 and buffer_changed and buffer_curr > buffer_prev then
+			-- if the buffer is very large, it may not hit 0 before iframes run out
+			-- will this ever actually happen in practice? maybe not, but may as well future-proof this
+			return true
+		end
+		-- miscellaneous swap conditions per game
+		return gamemeta.other_swaps()
+	end
+end
+
 -- Modified version of the gamedata for Mega Man games on NES.
 -- Battletoads NES shows 6 "boxes" that look like HP.
 -- But, each toad actually has a max HP of 47. Each box is basically 8 HP.
@@ -2446,6 +2466,17 @@ local gamedata = {
 			return lives_changed and lives_curr < lives_prev -- we have died
 				and health_prev ~= 0 -- died from instant death
 		end,
+	},
+	['Zelda_LA']={ -- Link's Awakening (DX) GB/GBC
+		-- instead of damage directly lowering health, it's put into a "damage buffer" that then lowers health per frame
+		-- we can't rely on iframes alone, since walking into deep water without flippers sets iframes but does no damage
+		-- so check that iframes are set and damage buffer increased
+		func=damage_buffer_swap,
+		is_valid_gamestate=function() return memory.read_u8(0x1B95, "WRAM") == 11 end,
+		get_iframes=function() return memory.read_u8(0x1BC7, "WRAM") end,
+		-- get_health=function() return memory.read_u8(0x1B5A, "WRAM") end,
+		get_damage_buffer=function() return memory.read_u8(0x1B94, "WRAM") end,
+		other_swaps=function() return false end,
 	},
 	['MPAINT_DPAD_SNES']={ -- Gnat Attack in Mario Paint for SNES
 		-- (I tested this with a version that can use the dpad for movement and face buttons for clicks)
