@@ -69,6 +69,7 @@ plugin.description =
 	-Zelda II The Adventure of Link (NES), 1p
 	-Link's Awakening (GB), 1p
 	-Link's Awakening DX (GBC), 1p
+	-Oracle of Seasons (GBC), 1p
 	
 	ADDITIONAL GOODIES
 	-Anticipation (NES), up to 4 players, shuffles on incorrect player answers, correct CPU answers, and running out of time.
@@ -2477,6 +2478,28 @@ local gamedata = {
 		-- get_health=function() return memory.read_u8(0x1B5A, "WRAM") end,
 		get_damage_buffer=function() return memory.read_u8(0x1B94, "WRAM") end,
 		other_swaps=function() return false end,
+	},
+	['Zelda_Seasons']={ -- Oracle of Seasons GBC
+		-- iframes are set one frame before health is decreased if hit by enemy
+		-- HOWEVER, iframes are set the same frame health decreases if you fall in a hole
+		-- and drowning sets iframes at start of drowning animation, but decreases health on respawn
+		-- iframes are also set during various cutscenes for some reason
+		-- so i guess we just hope there's no damage over time effects?
+		func=health_swap,
+		is_valid_gamestate=function() return memory.read_u8(0x02EE, "WRAM") == 2 end,
+		-- get_iframes=function() return memory.read_u8(0x102B, "WRAM")) end,
+		get_health=function() return memory.read_u8(0x06A2, "WRAM") end,
+		other_swaps=function()
+			-- shuffle on dancing game failure because i think it's funny
+			local lost_dance_changed, lost_dance_curr, _ = update_prev('lost dance', memory.read_u8(0x0FD0, "WRAM") == 0xFF)
+			-- this address is used for different things depending on room, so check current room
+			if memory.read_u8(0x0C49, "WRAM") == 3 and memory.read_u8(0x0C4C, "WRAM") == 0x95 -- in dance hall
+				and lost_dance_changed and lost_dance_curr
+			then
+				return true, 70 -- enough time for the failure text to appear on max text speed
+			end
+			return false
+		end,
 	},
 	['MPAINT_DPAD_SNES']={ -- Gnat Attack in Mario Paint for SNES
 		-- (I tested this with a version that can use the dpad for movement and face buttons for clicks)
