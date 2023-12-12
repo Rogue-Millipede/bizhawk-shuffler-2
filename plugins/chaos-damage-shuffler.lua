@@ -2487,7 +2487,7 @@ local gamedata = {
 		-- so i guess we just hope there's no damage over time effects?
 		func=health_swap,
 		is_valid_gamestate=function() return memory.read_u8(0x02EE, "WRAM") == 2 end,
-		-- get_iframes=function() return memory.read_u8(0x102B, "WRAM")) end,
+		-- get_iframes=function() return memory.read_u8(0x102B, "WRAM") end,
 		get_health=function() return memory.read_u8(0x06A2, "WRAM") end,
 		other_swaps=function()
 			-- shuffle on dancing game failure because i think it's funny
