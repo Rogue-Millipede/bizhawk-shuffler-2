@@ -2468,7 +2468,7 @@ local gamedata = {
 				and health_prev ~= 0 -- died from instant death
 		end,
 	},
-	['Zelda_LA']={ -- Link's Awakening (DX) GB/GBC
+	['Zelda_LA']={ -- Link's Awakening (DX), GB/GBC
 		-- instead of damage directly lowering health, it's put into a "damage buffer" that then lowers health per frame
 		-- we can't rely on iframes alone, since walking into deep water without flippers sets iframes but does no damage
 		-- so check that iframes are set and damage buffer increased
@@ -2479,7 +2479,7 @@ local gamedata = {
 		get_damage_buffer=function() return memory.read_u8(0x1B94, "WRAM") end,
 		other_swaps=function() return false end,
 	},
-	['Zelda_Seasons']={ -- Oracle of Seasons GBC
+	['Zelda_Seasons']={ -- Oracle of Seasons, GBC
 		-- iframes are set one frame before health is decreased if hit by enemy
 		-- HOWEVER, iframes are set the same frame health decreases if you fall in a hole
 		-- and drowning sets iframes at start of drowning animation, but decreases health on respawn
