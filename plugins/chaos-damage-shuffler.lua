@@ -2486,13 +2486,24 @@ local gamedata = {
 		-- iframes are also set during various cutscenes for some reason
 		-- so i guess we just hope there's no damage over time effects?
 		func=health_swap,
-		is_valid_gamestate=function() return memory.read_u8(0x02EE, "WRAM") == 2 end,
+		is_valid_gamestate=function()
+			return memory.read_u8(0x02EE, "WRAM") == 2 -- main game
+				and not (memory.read_u8(0x0C3A, "WRAM") == 1 -- maple present
+					and memory.read_u8(0x0BEA, "WRAM") ~= 0) -- just bumped into maple
+			-- don't want to shuffle on link's hearts being added to maple prize pool
+		end,
 		-- get_iframes=function() return memory.read_u8(0x102B, "WRAM") end,
 		get_health=function() return memory.read_u8(0x06A2, "WRAM") end,
 		other_swaps=function()
-			-- shuffle on dancing game failure because i think it's funny
 			local room_bank = memory.read_u8(0x0C49, "WRAM")
 			local room_id = memory.read_u8(0x0C4C, "WRAM")
+			-- shuffle on using revive potion
+			local potion_curr = bit.band(memory.read_u8(0x0697, "WRAM"), 0x80) == 0x80
+			local potion_changed, _, _ = update_prev('potion', potion_curr)
+			if potion_changed and not potion_curr then
+				return true
+			end
+			-- shuffle on dancing game failure because i think it's funny
 			local lost_dance_changed, lost_dance_curr, _ = update_prev('lost dance', memory.read_u8(0x0FD0, "WRAM") == 0xFF)
 			-- this address is used for different things depending on room, so check current room
 			if room_bank == 3 and room_id == 0x95 -- in dance hall
