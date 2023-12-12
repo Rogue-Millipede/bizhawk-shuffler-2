@@ -2491,9 +2491,11 @@ local gamedata = {
 		get_health=function() return memory.read_u8(0x06A2, "WRAM") end,
 		other_swaps=function()
 			-- shuffle on dancing game failure because i think it's funny
+			local room_bank = memory.read_u8(0x0C49, "WRAM")
+			local room_id = memory.read_u8(0x0C4C, "WRAM")
 			local lost_dance_changed, lost_dance_curr, _ = update_prev('lost dance', memory.read_u8(0x0FD0, "WRAM") == 0xFF)
 			-- this address is used for different things depending on room, so check current room
-			if memory.read_u8(0x0C49, "WRAM") == 3 and memory.read_u8(0x0C4C, "WRAM") == 0x95 -- in dance hall
+			if room_bank == 3 and room_id == 0x95 -- in dance hall
 				and lost_dance_changed and lost_dance_curr
 			then
 				return true, 70 -- enough time for the failure text to appear on max text speed
