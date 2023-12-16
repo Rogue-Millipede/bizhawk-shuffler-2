@@ -2512,6 +2512,12 @@ local gamedata = {
 			then
 				return true, 70 -- enough time for the failure text to appear on max text speed
 			end
+			-- would like to shuffle on stealth segment failure but it's harder to detect than in Ages
+			-- rosa after dungeon 1, brothers before dungeon 4
+			-- rosa: 0x0308 == 0x26, 0x0309 == 1 (id of failure text)
+			-- these addresses are in a general buffer area, cannot guarantee they won't be set in other contexts
+			-- can't just check current room like for minigames since enemies or maple also show up in these rooms
+			-- and may set these when not in stealth segment
 			return false
 		end,
 	},
