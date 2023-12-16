@@ -70,6 +70,7 @@ plugin.description =
 	-Link's Awakening (GB), 1p
 	-Link's Awakening DX (GBC), 1p
 	-Oracle of Seasons (GBC), 1p
+	-Oracle of Ages (GBC), 1p
 	
 	ADDITIONAL GOODIES
 	-Anticipation (NES), up to 4 players, shuffles on incorrect player answers, correct CPU answers, and running out of time.
@@ -2510,6 +2511,70 @@ local gamedata = {
 				and lost_dance_changed and lost_dance_curr
 			then
 				return true, 70 -- enough time for the failure text to appear on max text speed
+			end
+			return false
+		end,
+	},
+	['Zelda_Ages']={ -- Oracle of Ages, GBC
+		-- same iframe weirdness as Seasons
+		func=health_swap,
+		is_valid_gamestate=function()
+			return memory.read_u8(0x02EE, "WRAM") == 2 -- main game
+				and not (memory.read_u8(0x0DDA, "WRAM") == 1 -- maple present
+					and memory.read_u8(0x0BE9, "WRAM") ~= 0) -- just bumped into maple
+			-- don't want to shuffle on link's hearts being added to maple prize pool
+		end,
+		-- get_iframes=function() return memory.read_u8(0x102B, "WRAM") end,
+		get_health=function() return memory.read_u8(0x06AA, "WRAM") end,
+		other_swaps=function()
+			local room_bank = memory.read_u8(0x0C2D, "WRAM")
+			local room_id = memory.read_u8(0x0C30, "WRAM")
+			-- shuffle on using revive potion
+			local potion_curr = bit.band(memory.read_u8(0x069F, "WRAM"), 0x80) == 0x80
+			local potion_changed, _, _ = update_prev('potion', potion_curr)
+			if potion_changed and not potion_curr
+				and not (room_bank == 5 and room_id == 0xAD) -- king zora's throne room
+				-- don't shuffle on giving potion to king zora
+			then
+				return true
+			end
+			-- got caught in ambi's palace stealth section
+			if room_bank == 1 and room_id == 0x46 then -- outside ambi's palace
+				local caught_curr = memory.read_u8(0x1004, "WRAM") == 15 -- link state, 15 when kicked out of palace
+				-- i can't guarantee this link state is only used here, so that's why we check the room for safety
+				local caught_changed, _, _ = update_prev('caught', caught_curr)
+				return caught_changed and caught_curr
+			end
+			-- MINIGAME BLOCK
+			-- what does and doesn't count for minigames is admittedly somewhat arbitrary
+			-- general premise is that "score attack" games don't shuffle from just getting a low score,
+			-- pass/fail games shuffle on failure, and games with "miss" states shuffle per miss
+			if room_bank == 3 and room_id == 0x3E then -- big bang game room
+				-- big bang game loss
+				local bb_ended_curr = memory.read_u8(0x0DDB, "WRAM") == 0x80
+				local bb_ended_changed, _, _ = update_prev('big bang', bb_ended_curr)
+				local bb_won = memory.read_u8(0x0FC0, "WRAM") == 1
+				return bb_ended_changed and bb_ended_curr and not bb_won, 80
+			elseif room_bank == 2 and (room_id == 0xED or room_id == 0xEF) then -- goron dance present and past respectively
+				-- goron dance miss
+				local dance_changed, dance_curr, _ = update_prev('goron dance', memory.read_u8(0x0FD9, "WRAM") == 1)
+				return dance_changed and dance_curr
+			elseif room_bank == 5 and room_id == 0xE8 then -- patch's basement
+				-- patch's crazy cart loss
+				local patch_changed, patch_curr, _ = update_prev('patch', memory.read_u8(0x0FD5, "WRAM") == 1)
+				return patch_changed and patch_curr, 120 -- fade to white before shuffle
+			elseif (room_bank == 2 and room_id == 0xE9) -- lynna shooting gallery
+				or (room_bank == 3 and room_id == 0xE7) -- goron shooting gallery
+			then
+				-- shooting gallery ball missed
+				local round_end_curr = bit.band(memory.read_u8(0x0CD6, "WRAM"), 0x80) == 0x80
+				local round_end_changed, _, _ = update_prev('round ended', round_end_curr)
+				local strike = memory.read_u8(0x0FD6, "WRAM") == 1
+				return round_end_changed and round_end_curr and strike, 60 -- let strike text show up before shuffle
+			elseif room_bank == 2 and room_id == 0xDE then -- wild tokay room
+				-- wild tokay loss
+				local tokay_changed, tokay_curr, _ = update_prev('tokay', memory.read_u8(0x0FDE, "WRAM") == 0xFF)
+				return tokay_changed and tokay_curr
 			end
 			return false
 		end,
