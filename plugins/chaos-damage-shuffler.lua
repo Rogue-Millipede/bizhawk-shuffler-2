@@ -69,6 +69,7 @@ plugin.description =
 	-Zelda II The Adventure of Link (NES), 1p
 	-Link's Awakening (GB), 1p
 	-Link's Awakening DX (GBC), 1p
+	-Ocarina of Time (N64), 1p (ENABLE EXPANSION SLOT FOR N64 GAMES)
 	-Oracle of Seasons (GBC), 1p
 	-Oracle of Ages (GBC), 1p
 	
@@ -97,6 +98,7 @@ plugin.description =
 	
 	----PREPARATION----
 	-Set Min and Max Seconds VERY HIGH, assuming you don't want time swaps in addition to damage swaps.
+	-If adding N64 games, enable the Expansion Slot. Some games will fail to shuffle or crash Bizhawk without it.
 	
 	-Non-Battletoads games: just put your game in the games folder.
 	
@@ -1373,6 +1375,89 @@ local function damage_buffer_swap(gamemeta)
 	end
 end
 
+local function ocarina_swap(gamemeta)
+	return function ()
+		-- every version of ocarina of time has different memory addresses so it gets its own function
+		-- so all the miscellaneous shuffle conditions only have to be written once
+		-- local iframes_changed, iframes_curr, iframes_prev = update_prev('iframes', gamemeta.get_iframes())
+		-- redeads don't do iframes, and while they set a "grabbed" variable on link,
+		-- the same variable is set by dead hand's hands, which deal no damage and must be grabbed by to make it show up
+		-- this same variable is also set by morpha, whose grab damage is much faster than redeads'
+		-- shabom (bubbles in jabu) and big skulltulas set iframes 3 frames after damage and so don't shuffle
+		-- so i guess we're back to ignoring iframes! this game
+		-- i would really have liked to only shuffle once when initially grabbed by redead/morpha
+		-- but that's part of the actor's data and i really don't want to deal with that
+		local internal_health = gamemeta.get_health()
+		-- 0x0: full heart
+		-- 0x1-0x5: quarter heart
+		-- 0x6-0xA: half heart
+		-- 0xB-0xF: three quarter heart
+		-- convert internal health to "quarter hearts displayed" to only shuffle when fire damage etc makes health visibly decrease
+		local partialHeart = internal_health % 0x10
+		local fullHearts = (internal_health - partialHeart) / 0x10
+		if partialHeart == 0 then
+			partialHeart = 0
+		elseif partialHeart <= 5 then
+			partialHeart = 1
+		elseif partialHeart <= 10 then
+			partialHeart = 2
+		else
+			partialHeart = 3
+		end
+		local health_curr = fullHearts * 4 + partialHeart
+		local health_changed, _, health_prev = update_prev('health', health_curr)
+		-- local link_grabbed = gamemeta.is_link_grabbed()
+		-- local void_changed, void_curr, _ = update_prev('void', gamemeta.get_respawn_flag())
+		-- 1: standard void out, 0xFF: dampe race void out, wallmaster
+		-- 0xFE: ganon's tower collapse time up, sun's song in time-stopped area
+		-- no longer needed since we no longer check iframes
+		local savefile = gamemeta.get_savefile()
+		-- 0-2 for save files 1-3, 255 on title/file select/etc
+		local max_health = gamemeta.get_max_health()
+		-- since all memory is 0 on reset, need a value that is not 0 during gameplay to check gamestate is valid
+		local text_id_changed, text_id_curr, _ = update_prev('text id', gamemeta.get_text_id())
+		-- 0 when no textbox present, otherwise the id of the textbox's text
+		-- this won't play well with text randomization, or hacks that change which ids are used for certain things
+		-- but it's a lot simpler than wading through n64 memory allocation to detect these conditions other ways
+		if savefile >= 3 or max_health == 0 then
+			return false
+		end
+		-- if ((iframes_changed and iframes_prev <= 1 and iframes_curr > iframes_prev) or health_curr == 0 or link_grabbed)
+		if health_changed and health_curr < health_prev then
+			return true, 15 -- ocarina updates health 9 whole frames before you actually see link get hit for some reason
+			-- then add a bit extra so the player has time to notice the hit
+			-- 9 "emulator frames", ocarina runs at 20 fps so 3 visible frames
+		end
+		-- volcano time up just sets health to 0, which shuffles
+		-- gerudo spin attack that sends to jail deals damage and sets iframes as well
+		-- the timer running out in ganon's tower collapse refills your health??? ok
+		if text_id_changed
+			and (text_id_curr == 0x702D -- caught by hyrule castle guard
+				-- "Hey you! Stop! You, kid, over there!"
+				or text_id_curr == 0x6000 -- caught by gerudo guard
+				-- "Halt! Stay where you are!"
+				or text_id_curr == 0x4082 -- fish escaped from hook
+				-- "Hey, what happened? You lost it!"
+				or text_id_curr == 0x203D -- lost first ingo horse race
+				-- "Hee hee hee... Too bad for you! I get your 50 Rupees."
+				or text_id_curr == 0x203E -- lost second ingo horse race
+				-- "Wah ha hah! You're just a kid, after all!"
+				or text_id_curr == 0x102D -- lost at ocarina memory game
+				-- "Too bad...Heh heh!"
+				or text_id_curr == 0x71AD -- lost at shooting gallery, zora diving game
+				-- "Too bad! Practice hard and come back!"
+				or text_id_curr == 0x2081 -- lost at cucco search game
+				-- "Time's up! Too baaaaad!! These are some great Cuccos aren't they!"
+				or text_id_curr == 0x71B0)-- trade item expired
+				-- "Oh, no! Time's up!"
+			-- bombchu bowling uses 0x001A "Do you want to play again?" for both losing and winning
+		then
+			return true, 60
+		end
+		return false
+	end
+end
+
 -- Modified version of the gamedata for Mega Man games on NES.
 -- Battletoads NES shows 6 "boxes" that look like HP.
 -- But, each toad actually has a max HP of 47. Each box is basically 8 HP.
@@ -2479,6 +2564,44 @@ local gamedata = {
 		-- get_health=function() return memory.read_u8(0x1B5A, "WRAM") end,
 		get_damage_buffer=function() return memory.read_u8(0x1B94, "WRAM") end,
 		other_swaps=function() return false end,
+	},
+	['Zelda_Ocarina_10']={ -- Ocarina of Time, N64 (1.0)
+		func=ocarina_swap,
+		get_savefile=function() return memory.read_u8(0x11B927, "RDRAM") end,
+		get_max_health=function() return memory.read_u16_be(0x11A5FE, "RDRAM") end,
+		-- get_iframes=function() return memory.read_u8(0x1DB498, "RDRAM") end,
+		get_health=function() return memory.read_u16_be(0x11A600, "RDRAM") end,
+		-- is_link_grabbed=function() return bit.band(memory.read_u8(0x1DB0A3, "RDRAM"), 0x80) == 0x80 end,
+		-- get_respawn_flag=function() return memory.read_u8(0x11B937, "RDRAM") end,
+		get_text_id=function() return memory.read_u16_be(0x1D8870, "RDRAM") end,
+	},
+	['Zelda_Ocarina_11']={ -- Ocarina of Time, N64 (1.1)
+		func=ocarina_swap,
+		get_savefile=function() return memory.read_u8(0x11BAE7, "RDRAM") end,
+		get_max_health=function() return memory.read_u16_be(0x11A7BE, "RDRAM") end,
+		get_health=function() return memory.read_u16_be(0x11A7C0, "RDRAM") end,
+		get_text_id=function() return memory.read_u16_be(0x1D8A30, "RDRAM") end,
+	},
+	['Zelda_Ocarina_12']={ -- Ocarina of Time, N64 (1.2)
+		func=ocarina_swap,
+		get_savefile=function() return memory.read_u8(0x11BFD7, "RDRAM") end,
+		get_max_health=function() return memory.read_u16_be(0x11ACAE, "RDRAM") end,
+		get_health=function() return memory.read_u16_be(0x11ACB0, "RDRAM") end,
+		get_text_id=function() return memory.read_u16_be(0x1D9130, "RDRAM") end,
+	},
+	['Zelda_Ocarina_GC']={ -- Ocarina of Time, N64 (GameCube version)
+		func=ocarina_swap,
+		get_savefile=function() return memory.read_u8(0x11C49F, "RDRAM") end,
+		get_max_health=function() return memory.read_u16_be(0x11B176, "RDRAM") end,
+		get_health=function() return memory.read_u16_be(0x11B178, "RDRAM") end,
+		get_text_id=function() return memory.read_u16_be(0x1D9A30, "RDRAM") end,
+	},
+	['Zelda_Ocarina_MQ']={ -- Ocarina of Time, N64 (Master Quest GameCube version)
+		func=ocarina_swap,
+		get_savefile=function() return memory.read_u8(0x11C47F, "RDRAM") end,
+		get_max_health=function() return memory.read_u16_be(0x11B156, "RDRAM") end,
+		get_health=function() return memory.read_u16_be(0x11B158, "RDRAM") end,
+		get_text_id=function() return memory.read_u16_be(0x1D99F0, "RDRAM") end,
 	},
 	['Zelda_Seasons']={ -- Oracle of Seasons, GBC
 		-- iframes are set one frame before health is decreased if hit by enemy
