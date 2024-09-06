@@ -70,6 +70,7 @@ plugin.description =
 	-Link's Awakening (GB), 1p
 	-Link's Awakening DX (GBC), 1p
 	-Ocarina of Time (N64), 1p (ENABLE EXPANSION SLOT FOR N64 GAMES)
+	-Majora's Mask (N64), 1p (ENABLE EXPANSION SLOT FOR N64 GAMES)
 	-Oracle of Seasons (GBC), 1p
 	-Oracle of Ages (GBC), 1p
 	
@@ -2613,6 +2614,153 @@ local gamedata = {
 		get_max_health=function() return memory.read_u16_be(0x11B156, "RDRAM") end,
 		get_health=function() return memory.read_u16_be(0x11B158, "RDRAM") end,
 		get_text_id=function() return memory.read_u16_be(0x1D99F0, "RDRAM") end,
+	},
+	['Zelda_Majora']={
+		-- big skulltulas now don't set iframes at all
+		func=health_swap,
+		is_valid_gamestate=function()
+			local savefile = memory.read_u8(0x1F3313, "RDRAM")
+			-- 0-1 for save files 1-2, 255 on title/file select/etc
+			-- except! it's 0 on title if you save at an owl statue
+			-- so we'll need something else to check!
+			-- since memory is zero'd on reset, need to also check something that is not 0 during gameplay
+			local max_hp_changed, _, _ = update_prev('max health', memory.read_u16_be(0x1EF6A4, "RDRAM"))
+			-- poison water damages so fast as to be unplayable if it shuffles
+			-- not entirely sure what else this address does, but it seems to consistently be 2 when in poison water
+			local in_poison_water = memory.read_u8(0x74FF9B, "RDRAM") == 2
+			return savefile <= 2 and not max_hp_changed and not in_poison_water
+			-- title screen has 3 hearts current and max (so can't shuffle, since this lowering current hp would lower max hp)
+			-- going from title to file select, the game stores file 1's hp for a frame, then file 2's until loading a file
+			-- so if file 1 has 3 max hearts but not full hp, going from title to file select will shuffle
+			-- if file 1 and 2 have the same max hp but 2 has lower current hp, going from title to file select will shuffle
+			-- and if they have the same max hp but 1 has lower current hp, loading file 1 will shuffle
+			-- if a file has less than full health on its hard save but full health on its owl save,
+			-- this creates a whole new set of incorrect shuffles. nightmare
+			-- please someone find a consistent "currently on file select" address/value and end this
+			-- until then, just don't use owl saves during the shuffler i guess?
+		end,
+		get_health=function()
+			local internal_health = memory.read_u16_be(0x1EF6A6, "RDRAM")
+			-- 0x0: full heart
+			-- 0x1-0x5: quarter heart
+			-- 0x6-0xA: half heart
+			-- 0xB-0xF: three quarter heart
+			-- convert internal health to "quarter hearts displayed"
+			-- to only shuffle when fire damage etc makes health visibly decrease
+			local partialHeart = internal_health % 0x10
+			local fullHearts = (internal_health - partialHeart) / 0x10
+			if partialHeart == 0 then
+				partialHeart = 0
+			elseif partialHeart <= 5 then
+				partialHeart = 1
+			elseif partialHeart <= 10 then
+				partialHeart = 2
+			else
+				partialHeart = 3
+			end
+			return fullHearts * 4 + partialHeart
+		end,
+		shuffle_delay=function() return 15 end, -- 9 frames before damage is visible, plus extra
+		other_swaps=function()
+			local text_id_changed, text_id_curr, _ = update_prev('text id', memory.read_u16_be(0x3FD32C, "RDRAM"))
+			-- similar to ocarina, check current textbox to determine things like minigame or stealth failure
+			if text_id_changed and
+				(text_id_curr == 0x27EC -- fell off deku scrub playground
+				-- "Too bad. You're done!"
+				or text_id_curr == 0x27EA -- took too long in deku scrub playground
+				-- "Time's up. You're done!"
+				or text_id_curr == 0x272E -- failed sword training
+				-- "Your training is insufficient. You must jump more!"
+				or text_id_curr == 0x2795 -- postman game close miss
+				-- "Oh! Almost! That was a close one..."
+				or text_id_curr == 0x2796 -- postman game big miss
+				-- "See! I told you it's difficult!"
+				or text_id_curr == 0x2797 -- postman game over 15 seconds
+				-- "You're past 10 seconds!"
+				or text_id_curr == 0x077D -- lost chest maze game
+				-- "All right. Time's up!"
+				or text_id_curr == 0x2885 -- honey and darling time up
+				-- "All done."
+				or text_id_curr == 0x2888 -- honey and darling fell off platform
+				-- "Oh, that's why I told you..."
+				or text_id_curr == 0x0833 -- caught by deku guard
+				-- "Aha! An intruder!"
+				or text_id_curr == 0x0A32 -- failed swamp shooting gallery
+				-- "Well, looks like ya gotta try a beet hardah, mate!"
+				or text_id_curr == 0x352D -- dog race lost
+				-- "That was a bad choice!"
+				or text_id_curr == 0x04B3 -- wrong answer in keaton quiz
+				-- "Hee-hee-ho! Your training is insufficient! Come back and try again, child!"
+				or text_id_curr == 0x0E93 -- lost goron race
+				-- "...You're just a little stiff because winter was so long."
+				or text_id_curr == 0x0E95 -- false start in goron race
+				-- "Everyone, one entrant made a false start, so we must restart the race."
+				or text_id_curr == 0x334B -- lost romani's horseback archery training
+				-- "OK! Time's up!"
+				or text_id_curr == 0x3476 -- lost gorman horse race on first/second day
+				-- "Hyuh, hyuh! We win!!!"
+				or text_id_curr == 0x3499 -- lost gorman horse race on final day
+				-- "Heh, heh... We win!!! We're on fire!"
+				or text_id_curr == 0x332F -- failed ranch defense, romani abducted
+				-- "Aaiieee-Aaaaaahhh!!!"
+				or text_id_curr == 0x1194 -- caught by pirate guard
+				-- "Hey, you! Halt!!!"
+				or text_id_curr == 0x11AE -- caught by pirate leader without stone mask
+				-- "Halt! Everyone! A rat has snuck in!"
+				or text_id_curr == 0x11AF -- caught by pirate leader with stone mask
+				-- "Halt! Everyone! A rat wearing a strange mask has snuck in!"
+				or text_id_curr == 0x10D7 -- ran out of time in beaver race
+				-- "OK... Time's up!"
+				or text_id_curr == 0x10DA -- cheated in beaver race (younger brother only)
+				-- "You cheated, didn't you? You didn't get all the rings!"
+				or text_id_curr == 0x10E9 -- cheated in beaver race (older brother present)
+				-- "You cheated, didn't you? You didn't get all the rings!"
+				or text_id_curr == 0x10A2 -- lost fisherman's jumping game
+				-- "What do you think? It's harder than it seems, isn't it?"
+				or text_id_curr == 0x146C -- failed sakon's hideout
+				-- "Yesss! My security system is impenetrable"
+				-- 0x087F shot koume too many times, not used since we shuffle on each hit
+				-- "Hey! Hey! Hey! What are you aiming for, anyway? That's it! We're done!"
+				-- there's also various "not enough targets" strings for this minigame
+				-- 0x33C0 lost cremia's carriage defense, not used since we shuffle on each hit
+				-- "My precious milk... It's a mess... I've failed as a ranch manager..."
+				)
+			then
+				return true, 60
+			end
+			-- koume archery minigame: shuffle on hitting koume
+			-- i think this address is a general 'minigame secondary score' value?
+			local koume_changed, koume_curr, koume_prev = update_prev('koume hits', memory.read_u16_be(0x1F35AC, "RDRAM"))
+			-- town shooting gallery: shuffle on losing time from hitting blue octorok
+			local timer_changed, timer_curr, timer_prev = update_prev('minigame timer', memory.read_u16_be(0x1F345E, "RDRAM"))
+			-- cremia carriage defense: shuffle on milk bottle damaged
+			local milk_hp_changed, milk_hp_curr, milk_hp_prev = update_prev('milk hp',
+				memory.read_u32_be(0x42E434, "RDRAM") + memory.read_u32_be(0x42E438, "RDRAM") + memory.read_u32_be(0x42E43C, "RDRAM"))
+			local area_curr = memory.read_u16_be(0x3E6BC4, "RDRAM")
+			if area_curr == 0 and -- 0 = southern swamp without poison
+				koume_changed and koume_curr > koume_prev
+			then
+				return true, 15
+			elseif area_curr == 0x20 and -- 0x20 = town shooting gallery
+				timer_changed and timer_prev - timer_curr > 20 -- in centiseconds
+				-- this won't shuffle if a blue octorok is hit in the last 0.2 seconds but how often is that happening
+			then
+				return true, 15
+			elseif area_curr == 0x6A and -- 0x6A = gorman track
+				milk_hp_changed and milk_hp_curr < milk_hp_prev and milk_hp_prev <= 12 and milk_hp_prev > 3
+				-- the three milk bottles have 0 hp when not in minigame, 5 hp during the pre-minigame cutscene,
+				-- start the minigame at 4 hp, and break at 1 hp
+				-- this area of memory has unrelated values when not in gorman track
+			then
+				return true, 15
+			end
+			-- shuffle on moon falling
+			local day_changed, day_curr, _ = update_prev('day', memory.read_u32_be(0x1EF688, "RDRAM"))
+			if day_changed and day_curr == 4 then
+				return true, 56*60 -- 56 seconds lets the moon fall cutscene play out and shuffles after majora's mask fades to black
+			end
+			return false
+		end,
 	},
 	['Zelda_Seasons']={ -- Oracle of Seasons, GBC
 		-- iframes are set one frame before health is decreased if hit by enemy
