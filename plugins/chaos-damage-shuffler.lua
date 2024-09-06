@@ -1290,9 +1290,15 @@ local function iframe_health_swap(gamemeta)
 		if gamemeta.get_health then
 			-- check 0 health for games that don't set iframes on death
 			if (iframes_valid or health_curr == 0) and health_changed and health_curr < health_prev then
+				if gamemeta.shuffle_delay then
+					return true, shuffle_delay()
+				end
 				return true
 			end
 		elseif iframes_valid then
+			if gamemeta.shuffle_delay then
+				return true, shuffle_delay()
+			end
 			return true
 		end
 		-- sometimes you want to swap for things that don't give iframes and change health, like non-standard game overs
@@ -1309,6 +1315,10 @@ local function health_swap(gamemeta)
 			return false
 		end
 		if health_changed and health_curr < health_prev then
+			if gamemeta.shuffle_delay then
+				-- some games want custom delay between damage and shuffle
+				return true, gamemeta.shuffle_delay()
+			end
 			return true
 		end
 		-- sometimes you want to swap for things that don't reduce health
