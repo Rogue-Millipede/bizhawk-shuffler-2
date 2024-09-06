@@ -1402,7 +1402,8 @@ local function ocarina_swap(gamemeta)
 		-- 0x1-0x5: quarter heart
 		-- 0x6-0xA: half heart
 		-- 0xB-0xF: three quarter heart
-		-- convert internal health to "quarter hearts displayed" to only shuffle when fire damage etc makes health visibly decrease
+		-- convert internal health to "quarter hearts displayed"
+		-- to only shuffle when fire damage etc makes health visibly decrease
 		local partialHeart = internal_health % 0x10
 		local fullHearts = (internal_health - partialHeart) / 0x10
 		if partialHeart == 0 then
